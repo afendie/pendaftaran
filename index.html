@@ -1,20 +1,20 @@
 <!DOCTYPE html>
-<html lang="ms" class="h-full bg-slate-950">
+<html lang="id" class="h-full bg-slate-950">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PENDAFTARAN PROGRAM - RELA BATU PAHAT</title>
   
-  <!-- Muat Turun CDN Premium untuk Reka Bentuk Visual & Interaktif -->
+  <!-- Unduh CDN Premium untuk Desain Visual & Interaktif -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
-  <!-- SweetAlert2 & AlpineJS untuk Logik Pengurusan Sesi dan Pop-up Dialog -->
+  <!-- SweetAlert2 & AlpineJS untuk Logika Pengelolaan Sesi dan Dialog Pop-up -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer crossorigin="anonymous"></script>
 
-  <!-- CSS Reka Bentuk Korporat Premium (Glassmorphism UI) -->
+  <!-- CSS Desain Korporat Premium (Glassmorphism UI) -->
   <style>
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
@@ -56,7 +56,7 @@
 </head>
 <body class="h-full flex flex-col text-slate-100 selection:bg-blue-600 selection:text-white" x-data="appManager()">
 
-  <!-- ================= SPINNER OVERLAY MEMUATKAN DATA ================= -->
+  <!-- ================= SPINNER OVERLAY MEMUAT DATA ================= -->
   <div x-show="loading" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-950/95 backdrop-blur-md">
     <div class="relative w-16 h-16">
       <div class="absolute inset-0 border-4 border-slate-800 rounded-full"></div>
@@ -77,19 +77,19 @@
       </div>
     </div>
     
-    <!-- MENU NAVIGASI: Hanya dipaparkan sekiranya Token Sesi Pentadbir wujud & disahkan aktif -->
+    <!-- MENU NAVIGASI: Hanya ditampilkan apabila sesi Admin aktif -->
     <div x-show="isAdmin" x-transition class="flex bg-slate-950/80 p-1.5 rounded-2xl border border-white/5">
       <button @click="tab = 'daftar'" :class="tab === 'daftar' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'" class="px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all">
-        <i class="fas fa-file-signature mr-1.5"></i>Borang
+        <i class="fas fa-file-signature mr-1.5"></i>Formulir
       </button>
       <button @click="tab = 'program'" :class="tab === 'program' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'" class="px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all">
-        <i class="fas fa-calendar-plus mr-1.5"></i>Urus Program
+        <i class="fas fa-calendar-plus mr-1.5"></i>Kelola Program
       </button>
       <button @click="tab = 'arkib'" :class="tab === 'arkib' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'" class="px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all">
-        <i class="fas fa-database mr-1.5"></i>Log Rekod
+        <i class="fas fa-database mr-1.5"></i>Riwayat Kehadiran
       </button>
       <button @click="tab = 'tetapan'" :class="tab === 'tetapan' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'" class="px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all">
-        <i class="fas fa-gears mr-1.5"></i>GAS & PIN
+        <i class="fas fa-key mr-1.5"></i>Keamanan PIN
       </button>
       <button @click="logKeluarAdmin" class="px-4 py-2.5 rounded-xl text-[10px] font-black text-rose-400 hover:bg-rose-500/10 uppercase tracking-wider transition-all" title="Keluar Sesi Admin">
         <i class="fas fa-right-from-bracket"></i>
@@ -101,48 +101,27 @@
   <main class="flex-1 overflow-y-auto p-4 sm:p-10 flex items-center justify-center">
     <div class="w-full max-w-2xl">
 
-      <!-- ================= JALUR KESELAMATAN: BANNER PERINGATAN URL GAS BELUM DISUBMIT ================= -->
-      <div x-show="!gasUrl" x-transition class="glass-card rounded-[2.5rem] p-8 text-center space-y-6 relative overflow-hidden">
-        <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-red-500 to-amber-500"></div>
-        <div class="w-20 h-20 bg-rose-500/10 text-rose-400 rounded-3xl flex items-center justify-center mx-auto text-3xl border border-rose-500/20">
-          <i class="fas fa-triangle-exclamation"></i>
-        </div>
-        <div>
-          <h2 class="text-xl font-extrabold text-white uppercase tracking-wide">Pautan Pelayan Belum Ditetapkan</h2>
-          <p class="text-xs text-slate-400 mt-2 leading-relaxed">
-            Sistem ini memerlukan penyambungan pangkalan data awan aktif ke Google Spreadsheet Pejabat RELA Daerah Batu Pahat sebelum pendaftaran dibuka kepada anggota.
-          </p>
-        </div>
-        <div class="p-5 bg-slate-900/60 rounded-2xl border border-white/5 space-y-4">
-          <label class="block text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Masukkan Google Web App URL Anda</label>
-          <input type="url" x-model="tempGasUrl" placeholder="https://script.google.com/macros/s/.../exec" class="w-full px-5 py-4 glass-input rounded-2xl text-xs font-mono text-white placeholder:text-slate-700 outline-none text-center">
-          <button @click="konfigurasiAwalGas()" class="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all">
-            Hubungkan Pangkalan Data
-          </button>
-        </div>
-      </div>
-
-      <!-- ================= TAB 1: BORANG PENDAFTARAN ANGGOTA (DIPAPARKAN APABILA GAS URL AKTIF) ================= -->
-      <div x-show="tab === 'daftar' && gasUrl" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" class="glass-card rounded-[2.5rem] p-6 sm:p-10 relative overflow-hidden">
+      <!-- ================= TAB 1: FORMULIR PENDAFTARAN ANGGOTA ================= -->
+      <div x-show="tab === 'daftar'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" class="glass-card rounded-[2.5rem] p-6 sm:p-10 relative overflow-hidden">
         <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-600 via-indigo-500 to-amber-500"></div>
         
         <div class="text-center mb-8">
           <span class="px-4 py-1.5 bg-blue-500/10 border border-blue-500/30 text-blue-400 text-[10px] font-black uppercase tracking-[0.25em] rounded-full">Sistem Kehadiran Pintar</span>
           <h2 class="text-2xl sm:text-3xl font-extrabold text-white mt-4 tracking-tight uppercase">Daftar Kehadiran</h2>
-          <p class="text-xs text-slate-400 mt-2">Sila isi maklumat anda di bawah. Gunakan **HURUF BESAR** sepenuhnya.</p>
+          <p class="text-xs text-slate-400 mt-2">Silakan isi informasi Anda di bawah ini menggunakan **HURUF BESAR** sepenuhnya.</p>
         </div>
 
         <form @submit.prevent="prosesPenyerahan" class="space-y-6">
           
-          <!-- Tajuk Program -->
+          <!-- Pilihan Program -->
           <div>
-            <label class="block text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2 mb-2">Tajuk Program Penugasan *</label>
+            <label class="block text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2 mb-2">Nama Program Penugasan *</label>
             <div class="relative">
               <select x-model="form.program" @change="semakKeadaanProgram()" required class="w-full px-5 py-4 glass-input rounded-2xl text-xs font-bold text-white outline-none cursor-pointer appearance-none">
                 <option value="" disabled selected>PILIH PROGRAM / ACARA...</option>
-                <!-- Melukis senarai program yang telah disusun secara kronologi (Aktif di atas, Terlepas di bawah) -->
+                <!-- Melukis senarai program yang telah disusun secara kronologi (Aktif di atas, Terlewat di bawah) -->
                 <template x-for="p in sortedProgramList" :key="p.name">
-                  <option :value="p.name" :disabled="p.isPast" x-text="p.isPast ? p.name + ' (TERLEPAS TARIKH)' : p.name" :class="p.isPast ? 'text-slate-500' : 'text-white font-extrabold'"></option>
+                  <option :value="p.name" :disabled="p.isPast" x-text="p.isPast ? p.name + ' (WAKTU TERLEWATI)' : p.name" :class="p.isPast ? 'text-slate-500' : 'text-white font-extrabold'"></option>
                 </template>
               </select>
               <div class="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
@@ -150,17 +129,17 @@
               </div>
             </div>
             
-            <!-- ================= SISTEM INDIKATOR BUTIRAN & KAPASITI ANGGOTA (LIVE COUNT + TARIKH MASA + LOKASI GOOGLE MAPS) ================= -->
+            <!-- ================= STATUS DETAIL & LIVE CAPACITY KONTROL ================= -->
             <div x-show="form.program" x-transition class="mt-4 p-5 bg-slate-900/80 rounded-2xl border border-white/5 space-y-4">
               
-              <!-- Bahapar Paparan Tarikh & Masa Program -->
+              <!-- Tampilan Hari, Tanggal & Waktu Program -->
               <div class="grid grid-cols-2 gap-4 border-b border-white/5 pb-4">
                 <div class="flex items-center gap-3">
                   <div class="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400">
                     <i class="fas fa-calendar-day text-xs"></i>
                   </div>
                   <div>
-                    <span class="block text-[8px] font-black text-slate-500 uppercase tracking-widest">Tarikh Acara</span>
+                    <span class="block text-[8px] font-black text-slate-500 uppercase tracking-widest">Tanggal Acara</span>
                     <span class="text-xs font-extrabold text-slate-200" x-text="formatTarikh(currentDate)"></span>
                   </div>
                 </div>
@@ -169,33 +148,33 @@
                     <i class="fas fa-clock text-xs"></i>
                   </div>
                   <div>
-                    <span class="block text-[8px] font-black text-slate-500 uppercase tracking-widest">Masa Lapor</span>
+                    <span class="block text-[8px] font-black text-slate-500 uppercase tracking-widest">Waktu Lapor</span>
                     <span class="text-xs font-extrabold text-slate-200" x-text="formatMasa(currentTime)"></span>
                   </div>
                 </div>
               </div>
 
-              <!-- BUTIRAN LOKASI PROGRAM & TAUTAN GOOGLE MAPS PINTAR -->
+              <!-- Detail Lokasi Penugasan & Google Maps Pintar -->
               <div class="flex items-start justify-between gap-4 border-b border-white/5 pb-4">
                 <div class="flex items-start gap-3">
                   <div class="w-8 h-8 rounded-lg bg-amber-50/5 flex items-center justify-center text-amber-400 shrink-0 mt-0.5">
                     <i class="fas fa-location-dot text-xs"></i>
                   </div>
                   <div>
-                    <span class="block text-[8px] font-black text-slate-500 uppercase tracking-widest">Lokasi Bertugas</span>
+                    <span class="block text-[8px] font-black text-slate-500 uppercase tracking-widest">Lokasi Penugasan</span>
                     <span class="text-xs font-black text-slate-200 uppercase leading-relaxed" x-text="currentLocation"></span>
                   </div>
                 </div>
                 
-                <!-- Butang Pandu ke Google Maps -->
+                <!-- Tombol Buka Arah di Google Maps -->
                 <a :href="'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(currentLocation)" 
                    target="_blank" 
                    class="px-3.5 py-2 bg-blue-600/15 hover:bg-blue-600 border border-blue-500/20 hover:border-blue-500 text-blue-400 hover:text-white rounded-xl text-[9px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all shrink-0">
-                  <i class="fas fa-map-location-dot"></i> Pandu
+                  <i class="fas fa-map-location-dot"></i> Navigasi
                 </a>
               </div>
 
-              <!-- Bar Kemajuan Visual Dinamik -->
+              <!-- Bar Kuota Terisi -->
               <div class="space-y-2">
                 <div class="flex justify-between items-center text-[10px] font-black uppercase tracking-wider">
                   <span class="text-slate-400"><i class="fas fa-users-viewfinder mr-1.5 text-blue-400"></i> Status Kuota Anggota</span>
@@ -210,67 +189,67 @@
                 </div>
               </div>
 
-              <!-- Status Ringkasan Sisa Slot -->
+              <!-- Status Kuota Tersisa -->
               <div class="flex justify-between items-center text-[9px] font-bold uppercase tracking-widest pt-1">
-                <span class="text-slate-500" x-text="`Baki Kekosongan: ${Math.max(currentCapacity - currentRegCount, 0)} Slot`"></span>
-                <span x-show="programIsFull" class="text-rose-500 font-extrabold animate-pulse"><i class="fas fa-triangle-exclamation mr-1"></i> HAD PENUH! SURAT DAFTAR DIKUNCI</span>
+                <span class="text-slate-500" x-text="`Sisa Slot: ${Math.max(currentCapacity - currentRegCount, 0)} Slot`"></span>
+                <span x-show="programIsFull" class="text-rose-500 font-extrabold animate-pulse"><i class="fas fa-triangle-exclamation mr-1"></i> PENDAFTARAN PENUH (DITUTUP)</span>
                 <span x-show="!programIsFull" class="text-emerald-400 font-extrabold"><i class="fas fa-circle-check mr-1"></i> Pendaftaran Terbuka</span>
               </div>
             </div>
 
-            <p x-show="programList.length === 0" class="text-[9px] text-rose-400 font-bold uppercase mt-2 ml-2">Tiada program aktif dikesan di pelayan spreadsheet.</p>
+            <p x-show="programList.length === 0" class="text-[9px] text-rose-400 font-bold uppercase mt-2 ml-2">Belum ada program aktif dikesan di server.</p>
           </div>
 
-          <!-- Nama Penuh -->
+          <!-- Nama Lengkap -->
           <div>
-            <label class="block text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2 mb-2">Nama Penuh (Such As In MyKad) *</label>
+            <label class="block text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2 mb-2">Nama Lengkap (Sesuai MyKad / KTP) *</label>
             <div class="relative">
               <input type="text" x-model="form.nama" @input="tapisNama($event)" required placeholder="CONTOH: MOHD BIN ABDULLAH" class="w-full px-5 py-4 pl-12 glass-input rounded-2xl text-xs font-black text-white uppercase placeholder:text-slate-600 outline-none" :disabled="programIsFull">
               <i class="fas fa-user absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
             </div>
           </div>
 
-          <!-- Grid Kad Pengenalan & No Telefon -->
+          <!-- Grid Nomor Pengenal & No Telepon -->
           <div class="grid sm:grid-cols-2 gap-5">
             <!-- No. KP -->
             <div>
-              <label class="block text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2 mb-2">No. Kad Pengenalan *</label>
+              <label class="block text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2 mb-2">No. Kad Pengenalan / KTP *</label>
               <div class="relative">
                 <input type="text" x-model="form.kp" @input="tapisKp($event)" required maxlength="12" placeholder="981204015533" class="w-full px-5 py-4 pl-12 glass-input rounded-2xl text-xs font-black tracking-[0.15em] text-white placeholder:text-slate-600 outline-none" :disabled="programIsFull">
                 <i class="fas fa-id-card absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
               </div>
-              <p class="text-[9px] text-slate-500 font-bold uppercase mt-2 ml-2">12 angka tanpa simbol sengkang</p>
+              <p class="text-[9px] text-slate-500 font-bold uppercase mt-2 ml-2">12 digit angka tanpa simbol sengkang (-)</p>
             </div>
 
             <!-- No. Telefon -->
             <div>
-              <label class="block text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2 mb-2">No. Telefon Bimbit *</label>
+              <label class="block text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2 mb-2">No. Telepon Seluler *</label>
               <div class="relative">
                 <input type="text" x-model="form.tel" @input="tapisTel($event)" required maxlength="11" placeholder="0123456789" class="w-full px-5 py-4 pl-12 glass-input rounded-2xl text-xs font-black tracking-wider text-white placeholder:text-slate-600 outline-none" :disabled="programIsFull">
                 <i class="fas fa-phone absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
               </div>
-              <p class="text-[9px] text-slate-500 font-bold uppercase mt-2 ml-2">Mesti bermula dengan angka '01'</p>
+              <p class="text-[9px] text-slate-500 font-bold uppercase mt-2 ml-2">Nomor telepon harus dimulai dengan '01'</p>
             </div>
           </div>
 
-          <!-- Butang Hantar Kehadiran -->
+          <!-- Tombol Submit -->
           <div class="pt-2">
             <button type="submit" 
                     :disabled="programIsFull || programList.length === 0" 
                     :class="(programIsFull || programList.length === 0) ? 'from-slate-800 to-slate-900 text-slate-500 cursor-not-allowed border border-white/5 opacity-50 shadow-none' : 'from-blue-600 to-indigo-700 hover:from-blue-500 hover:to-indigo-600 text-white shadow-xl hover:shadow-blue-500/10 active:scale-[0.98]'"
                     class="w-full py-4.5 bg-gradient-to-r rounded-2xl font-extrabold text-xs uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3">
               <i class="fas fa-circle-check text-sm" :class="programIsFull ? 'text-slate-600' : 'text-amber-400'"></i> 
-              <span x-text="programIsFull ? 'PENDAFTARAN DITUTUP (HAD PENUH)' : 'Rekod Kehadiran Sekarang'"></span>
+              <span x-text="programIsFull ? 'DAFTAR DITUTUP (KUOTA PENUH)' : 'Kirim Kehadiran Sekarang'"></span>
             </button>
           </div>
         </form>
       </div>
 
-      <!-- ================= TAB 2: URUS PROGRAM (ADMIN PORTAL SAHAJA) ================= -->
+      <!-- ================= TAB 2: KELOLA PROGRAM (HANYA UNTUK PORTAL ADMIN) ================= -->
       <div x-show="tab === 'program' && isAdmin" x-transition class="glass-card rounded-[2.5rem] p-6 sm:p-8 shadow-2xl relative">
         <div class="border-b border-white/5 pb-5 mb-6">
-          <h3 class="text-lg font-black text-white uppercase tracking-wider"><i class="fas fa-calendar-plus text-amber-400 mr-2"></i>Urus Program, Jadual & Kapasiti</h3>
-          <p class="text-[10px] font-bold text-slate-400 uppercase mt-1">Daftar tajuk acara, tarikh, masa, lokasi penugasan dan muatan kapasiti</p>
+          <h3 class="text-lg font-black text-white uppercase tracking-wider"><i class="fas fa-calendar-plus text-amber-400 mr-2"></i>Pengurus Program & Penugasan</h3>
+          <p class="text-[10px] font-bold text-slate-400 uppercase mt-1">Daftarkan program penugasan, tanggal, waktu, lokasi, dan batas kuota</p>
         </div>
 
         <!-- Borang Tambah Program Baru -->
@@ -278,38 +257,38 @@
           <div class="grid grid-cols-1 gap-4">
             
             <div class="grid sm:grid-cols-2 gap-4">
-              <!-- Tajuk Program -->
+              <!-- Judul Program -->
               <div>
-                <label class="block text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2 mb-2">Tajuk Program Baru *</label>
-                <input type="text" x-model="baruProgramInput" @input="baruProgramInput = $event.target.value.toUpperCase()" required placeholder="CONTOH: KAWALAN TRAFIK BATU PAHAT" class="w-full px-5 py-3.5 glass-input rounded-2xl text-xs font-black text-white placeholder:text-slate-600 outline-none uppercase">
+                <label class="block text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2 mb-2">Nama Program Baru *</label>
+                <input type="text" x-model="baruProgramInput" @input="baruProgramInput = $event.target.value.toUpperCase()" required placeholder="CONTOH: KAWALAN LALU LINTAS" class="w-full px-5 py-3.5 glass-input rounded-2xl text-xs font-black text-white placeholder:text-slate-600 outline-none uppercase">
               </div>
               <!-- Lokasi Program -->
               <div>
-                <label class="block text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2 mb-2">Lokasi Penugasan (Rasmi) *</label>
-                <input type="text" x-model="baruProgramLocation" @input="baruProgramLocation = $event.target.value.toUpperCase()" required placeholder="CONTOH: STADIUM BATU PAHAT, JOHOR" class="w-full px-5 py-3.5 glass-input rounded-2xl text-xs font-black text-white placeholder:text-slate-600 outline-none uppercase">
+                <label class="block text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2 mb-2">Lokasi Penugasan Resmi *</label>
+                <input type="text" x-model="baruProgramLocation" @input="baruProgramLocation = $event.target.value.toUpperCase()" required placeholder="CONTOH: STADIUM BATU PAHAT" class="w-full px-5 py-3.5 glass-input rounded-2xl text-xs font-black text-white placeholder:text-slate-600 outline-none uppercase">
               </div>
             </div>
             
             <div class="grid sm:grid-cols-3 gap-4">
-              <!-- Tarikh Program -->
+              <!-- Tanggal Program -->
               <div>
-                <label class="block text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2 mb-2">Tarikh Acara *</label>
+                <label class="block text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2 mb-2">Tanggal Acara *</label>
                 <input type="date" x-model="baruProgramDate" required class="w-full px-5 py-3.5 glass-input rounded-2xl text-xs font-bold text-white outline-none cursor-pointer">
               </div>
-              <!-- Masa Program -->
+              <!-- Waktu Program -->
               <div>
-                <label class="block text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2 mb-2">Masa Lapor Diri *</label>
+                <label class="block text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2 mb-2">Waktu Lapor Diri *</label>
                 <input type="time" x-model="baruProgramTime" required class="w-full px-5 py-3.5 glass-input rounded-2xl text-xs font-bold text-white outline-none cursor-pointer">
               </div>
-              <!-- Kapasiti -->
+              <!-- Kapasitas -->
               <div>
-                <label class="block text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2 mb-2">Kapasiti (Orang) *</label>
+                <label class="block text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2 mb-2">Batas Kuota (Orang) *</label>
                 <input type="number" x-model.number="baruProgramCapacity" required min="1" max="500" placeholder="50" class="w-full px-5 py-3.5 glass-input rounded-2xl text-xs font-black text-white placeholder:text-slate-600 outline-none">
               </div>
             </div>
           </div>
           <button type="submit" class="w-full py-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-2xl font-black text-xs uppercase tracking-[0.15em] transition-all shadow-lg flex items-center justify-center gap-2">
-            <i class="fas fa-plus"></i> Daftar Program Baru
+            <i class="fas fa-plus"></i> Daftarkan Program Baru
           </button>
         </form>
 
@@ -324,17 +303,17 @@
                   <span class="text-xs font-black text-white uppercase" x-text="p.name"></span>
                 </div>
                 
-                <!-- Butiran Metadata Lengkap Program di Panel Admin -->
+                <!-- Rincian Metadata Program -->
                 <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-[9px] font-bold uppercase mt-1 text-slate-400">
                   <span><i class="fas fa-calendar-day mr-1 text-indigo-400"></i><span class="text-slate-300" x-text="formatTarikh(p.date)"></span></span>
                   <span><i class="fas fa-clock mr-1 text-indigo-400"></i><span class="text-slate-300" x-text="formatMasa(p.time)"></span></span>
                   <span><i class="fas fa-location-dot mr-1 text-amber-500"></i><span class="text-slate-300 truncate max-w-[150px]" x-text="p.location"></span></span>
-                  <span><i class="fas fa-user-check mr-1 text-blue-400"></i>Log: <strong class="text-white" x-text="getRegisteredCount(p.name)"></strong> / <span x-text="p.capacity"></span></span>
+                  <span><i class="fas fa-user-check mr-1 text-blue-400"></i>Terdaftar: <strong class="text-white" x-text="getRegisteredCount(p.name)"></strong> / <span x-text="p.capacity"></span></span>
                   <span :class="getRegisteredCount(p.name) >= p.capacity ? 'text-rose-400 bg-rose-500/10' : 'text-emerald-400 bg-emerald-500/10'" class="px-2 py-0.2 rounded text-[7px] font-black border border-white/5" x-text="getRegisteredCount(p.name) >= p.capacity ? 'PENUH' : 'ADA SLOT'"></span>
                 </div>
               </div>
               
-              <!-- Butang Tindakan (Edit & Padam) -->
+              <!-- Aksi Pengeditan & Penghapusan -->
               <div class="flex items-center gap-2 shrink-0">
                 <button @click="bukaEditProgram(p, index)" class="w-8 h-8 rounded-lg bg-blue-500/15 hover:bg-blue-500 text-blue-400 hover:text-white flex items-center justify-center transition-all" title="Ubah Maklumat Program">
                   <i class="fas fa-pen-to-square text-[10px]"></i>
@@ -347,20 +326,20 @@
           </template>
           
           <div x-show="programList.length === 0" class="text-center p-8 bg-slate-950/40 rounded-2xl border border-dashed border-white/10">
-            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">TIADA PROGRAM AKTIF DI SPREADSHEET.</p>
+            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">TIDAK ADA PROGRAM TERDAFTAR DI GOOGLE SHEETS.</p>
           </div>
         </div>
 
-        <!-- ================= MODAL EDIT MAKLUMAT PROGRAM ================= -->
+        <!-- ================= MODAL EDIT DATA PROGRAM (ADMIN) ================= -->
         <div x-show="editModal.open" class="absolute inset-0 z-50 bg-slate-950/95 backdrop-blur-md rounded-[2.5rem] p-6 sm:p-10 flex flex-col justify-center" x-transition>
           <div class="border-b border-white/5 pb-4 mb-5">
             <h3 class="text-base font-black text-amber-400 uppercase tracking-wider"><i class="fas fa-pen-to-square mr-2"></i>Kemaskini Maklumat Program</h3>
-            <p class="text-[9px] font-bold text-slate-400 uppercase mt-1">Ubah suai sebarang butiran program dan had kapasiti secara dinamik</p>
+            <p class="text-[9px] font-bold text-slate-400 uppercase mt-1">Ubah suai sebarang butiran program dan had kuota secara dinamik</p>
           </div>
 
           <form @submit.prevent="simpanEditProgramAwan" class="space-y-4">
             <div class="space-y-4">
-              <!-- Tajuk Program -->
+              <!-- Nama Program (Terkunci) -->
               <div>
                 <label class="block text-[9px] font-black uppercase text-slate-400 tracking-wider mb-1.5 ml-1">Tajuk Program</label>
                 <input type="text" x-model="editModal.name" @input="editModal.name = $event.target.value.toUpperCase()" required class="w-full px-5 py-3.5 glass-input rounded-2xl text-xs font-black text-white outline-none uppercase" disabled>
@@ -373,19 +352,19 @@
               </div>
               
               <div class="grid grid-cols-3 gap-4">
-                <!-- Tarikh Program -->
+                <!-- Tanggal -->
                 <div>
-                  <label class="block text-[9px] font-black uppercase text-slate-400 tracking-wider mb-1.5 ml-1">Tarikh</label>
+                  <label class="block text-[9px] font-black uppercase text-slate-400 tracking-wider mb-1.5 ml-1">Tanggal</label>
                   <input type="date" x-model="editModal.date" required class="w-full px-4 py-3.5 glass-input rounded-xl text-xs font-bold text-white outline-none">
                 </div>
-                <!-- Masa Program -->
+                <!-- Waktu Lapor -->
                 <div>
-                  <label class="block text-[9px] font-black uppercase text-slate-400 tracking-wider mb-1.5 ml-1">Masa Lapor</label>
+                  <label class="block text-[9px] font-black uppercase text-slate-400 tracking-wider mb-1.5 ml-1">Waktu Lapor</label>
                   <input type="time" x-model="editModal.time" required class="w-full px-4 py-3.5 glass-input rounded-xl text-xs font-bold text-white outline-none">
                 </div>
-                <!-- Kapasiti -->
+                <!-- Kuota -->
                 <div>
-                  <label class="block text-[9px] font-black uppercase text-slate-400 tracking-wider mb-1.5 ml-1">Kapasiti</label>
+                  <label class="block text-[9px] font-black uppercase text-slate-400 tracking-wider mb-1.5 ml-1">Kuota Batas</label>
                   <input type="number" x-model.number="editModal.capacity" required min="1" max="500" class="w-full px-4 py-3.5 glass-input rounded-xl text-xs font-black text-white outline-none">
                 </div>
               </div>
@@ -403,7 +382,7 @@
         </div>
       </div>
 
-      <!-- ================= TAB 3: LOG REKOD KEHADIRAN (ADMIN PORTAL SAHAJA) ================= -->
+      <!-- ================= TAB 3: LOG RIWAYAT KEHADIRAN (ADMIN PORTAL SAHAJA) ================= -->
       <div x-show="tab === 'arkib' && isAdmin" x-transition class="glass-card rounded-[2.5rem] p-6 sm:p-8 shadow-2xl">
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/5 pb-6 mb-6">
           <div>
@@ -416,13 +395,13 @@
           </button>
         </div>
 
-        <!-- Bar Carian Log -->
+        <!-- Pencarian Log -->
         <div class="relative mb-5">
           <input type="text" x-model="carian" placeholder="TULIS NAMA / NO KP UNTUK TAPIS REKOD..." class="w-full px-5 py-3.5 pl-11 glass-input rounded-xl text-xs font-bold text-white uppercase placeholder:text-slate-600 outline-none">
           <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
         </div>
 
-        <!-- Jadual Log -->
+        <!-- Tabel Log Rekod -->
         <div class="overflow-x-auto hide-scrollbar rounded-2xl border border-white/5">
           <table class="w-full text-left border-collapse text-[10px] font-bold uppercase tracking-wider">
             <thead>
@@ -430,7 +409,7 @@
                 <th class="p-4 text-center">Bil</th>
                 <th class="p-4">Program</th>
                 <th class="p-4">Nama Petugas</th>
-                <th class="p-4 text-center">No. KP</th>
+                <th class="p-4 text-center">No. KP / KTP</th>
                 <th class="p-4 text-center">No. Telefon</th>
                 <th class="p-4 text-center">Tarikh Masuk</th>
               </tr>
@@ -454,27 +433,16 @@
         </div>
       </div>
 
-      <!-- ================= TAB 4: TETAPAN GOOGLE APPS SCRIPT & PIN KESELAMATAN (ADMIN PORTAL) ================= -->
+      <!-- ================= TAB 4: PANEL KEAMANAN KUNCI PIN ================= -->
       <div x-show="tab === 'tetapan' && isAdmin" x-transition class="glass-card rounded-[2.5rem] p-6 sm:p-8 shadow-2xl">
         <div class="border-b border-white/5 pb-5 mb-5">
-          <h3 class="text-lg font-black text-white uppercase tracking-wider"><i class="fas fa-network-wired text-indigo-400 mr-2"></i>Penyambungan GAS & Profil</h3>
-          <p class="text-[10px] font-bold text-slate-400 uppercase mt-1">Urus pautan Spreadsheet dan tukar PIN keselamatan pintu masuk</p>
+          <h3 class="text-lg font-black text-white uppercase tracking-wider"><i class="fas fa-shield-halved text-indigo-400 mr-2"></i>Keamanan PIN Pentadbir</h3>
+          <p class="text-[10px] font-bold text-slate-400 uppercase mt-1">Ubah PIN akses masuk sistem untuk memelihara integriti data</p>
         </div>
 
         <div class="space-y-5">
-          <!-- Ruangan Google Apps Script URL -->
-          <div>
-            <label class="block text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2 mb-2">Google Web App URL</label>
-            <input type="url" x-model="gasUrl" @change="simpanGasUrl" placeholder="https://script.google.com/macros/s/.../exec" class="w-full px-5 py-4 glass-input rounded-2xl text-xs font-mono text-white placeholder:text-slate-700 outline-none">
-          </div>
-
-          <div class="flex items-center gap-3 p-4 bg-slate-900/60 rounded-xl border border-white/5">
-            <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
-            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">STATUS: SISTEM DISAMBUNGKAN KE SPREADSHEET KORPORAT</p>
-          </div>
-
-          <!-- ================= BORANG TUKAR PASSWORD/PIN KESELAMATAN PENTADBIR ================= -->
-          <div class="mt-6 p-5 bg-slate-900/80 rounded-2xl border border-white/5 space-y-4">
+          <!-- Update PIN Keselamatan Admin -->
+          <div class="p-5 bg-slate-900/80 rounded-2xl border border-white/5 space-y-4">
             <h4 class="text-xs font-black text-amber-400 uppercase tracking-widest flex items-center gap-2">
               <i class="fas fa-key"></i> Kemas Kini PIN Keselamatan Admin
             </h4>
@@ -521,14 +489,19 @@
 
   <!-- ================= LOGIK INTEGRASI KEADAAN (ALPINEJS) ================= -->
   <script>
+    // =========================================================================
+    // KONFIGURASI WEB APP GOOGLE APPS SCRIPT (GAS) BERPUSAT
+    // =========================================================================
+    // MASUKKAN URL GOOGLE WEB APP ANDA DI BAWAH INI SECARA MUTLAK (TANPA LOCALSTORAGE)
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbwyYzVIyN_GHsz_z_rnuNZawpFqsXVRkY-1KqXNpRIxf1gzGQee0gSn79ymVYxw7NbX/exec";
+
     function appManager() {
       return {
         tab: 'daftar',
         loading: false,
         loadingMsg: 'Menghubungi Kebal Pelayan...',
         isAdmin: false,
-        gasUrl: '',
-        tempGasUrl: '',
+        gasUrl: GAS_URL,
         carian: '',
         
         // Form Input Program Baru Admin
@@ -575,18 +548,21 @@
         senaraiRekod: [],
 
         init() {
-          // Muatkan URL Apps Script yang telah disimpan secara kekal
-          const simpananUrl = localStorage.getItem('bt_pahat_gas_url');
-          if (simpananUrl) {
-            this.gasUrl = simpananUrl;
-            this.tempGasUrl = simpananUrl;
-            this.muatTurunDataAwan();
-          }
+          // Sistem memulakan penyelarasan data terus dari pautan awan yang di-hardcode
+          this.muatTurunDataAwan();
         },
 
         // MEMUAT NAIK DATA SECARA REAL-TIME DARI PELAYAN SPREADSHEET GAS
         muatTurunDataAwan() {
-          if (!this.gasUrl) return;
+          if (!this.gasUrl || this.gasUrl.includes("YourActualIDHere")) {
+            Swal.fire({
+              title: 'Konfigurasi Diperlukan!',
+              text: 'Sila gantikan pembolehubah GAS_URL di dalam baris kode 733 dengan URL Google Web App yang betul untuk memulakan penyelarasan awan.',
+              icon: 'warning',
+              confirmButtonColor: '#f59e0b'
+            });
+            return;
+          }
           this.loading = true;
           this.loadingMsg = 'Memuat turun program aktif...';
           
@@ -615,38 +591,16 @@
               this.loading = false;
               Swal.fire({
                 title: 'Kegagalan Rangkaian!',
-                text: 'Sistem tidak dapat menghubungi pelayan GAS. Sila pastikan Web App anda aktif dan "Who has access: Anyone".',
+                text: 'Sistem tidak dapat menghubungi pelayan GAS. Sila pastikan Web App anda aktif dan diatur ke "Who has access: Anyone".',
                 icon: 'error',
                 confirmButtonColor: '#ef4444'
               });
             });
         },
 
-        // Konfigurasi Pautan GAS Kali Pertama
-        konfigurasiAwalGas() {
-          const urlStr = this.tempGasUrl.trim();
-          if (!urlStr.startsWith('https://script.google.com/')) {
-            Swal.fire({ title: 'Format Tidak Sah!', text: 'Sila masukkan pautan Web App Google Apps Script yang betul.', icon: 'warning', confirmButtonColor: '#f59e0b' });
-            return;
-          }
-          this.gasUrl = urlStr;
-          localStorage.setItem('bt_pahat_gas_url', urlStr);
-          this.muatTurunDataAwan();
-        },
-
-        // Simpan Url GAS Baru Dalam Tetapan
-        simpanGasUrl() {
-          const urlStr = this.gasUrl.trim();
-          if (!urlStr) return;
-          localStorage.setItem('bt_pahat_gas_url', urlStr);
-          this.muatTurunDataAwan();
-          Swal.fire({ title: 'Tetapan Dikunci!', text: 'Pautan pelayan baharu telah dikemas kini.', icon: 'success', confirmButtonColor: '#3b82f6' });
-        },
-
         // Helper memformat tarikh YYYY-MM-DD ke DD/MM/YYYY
         formatTarikh(dateStr) {
           if (!dateStr) return '-';
-          // Menapis ralat jika terdapat simbol pembahagi masa T (Format ISO UTC)
           if (dateStr.includes('T')) {
             dateStr = dateStr.split('T')[0];
           }
@@ -655,15 +609,13 @@
           return `${parts[2]}/${parts[1]}/${parts[0]}`;
         },
 
-        // Helper memformat masa 24 jam ke format AM/PM Bahasa Melayu
+        // Helper memformat masa 24 jam ke format AM/PM Bahasa Melayu/Indonesia
         formatMasa(timeStr) {
           if (!timeStr) return '-';
           
-          // Mengendalikan kes jika Masa dihantar dalam format ISO UTC (epoch epoch Epoch/Waktu)
           if (timeStr.includes('T')) {
             try {
               const d = new Date(timeStr);
-              // Tukar paksa ke Waktu Tempatan Malaysia (UTC+8) secara selamat
               return d.toLocaleTimeString('en-US', { 
                 hour: '2-digit', 
                 minute: '2-digit', 
@@ -736,7 +688,6 @@
 
           const target = this.programList.find(p => p.name === this.form.program);
           if (target) {
-            // Saringan Keselamatan: Sekat program jika terlepas tarikh
             const nowKL = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kuala_Lumpur' }));
             const progDateTime = new Date(`${target.date}T${target.time}`);
             const isPast = progDateTime < nowKL;
@@ -749,10 +700,10 @@
             
             if (isPast) {
               this.programIsFull = true;
-              this.form.program = ''; // Nyahpilih program
+              this.form.program = ''; // Reset selection
               Swal.fire({
-                title: 'Program Tamat!',
-                text: 'Maaf, pendaftaran program ini telah ditutup kerana acara bertugas telah terlepas tarikh.',
+                title: 'Program Berakhir!',
+                text: 'Maaf, pendaftaran untuk program ini telah ditutup karena waktu acara telah terlewati.',
                 icon: 'error',
                 confirmButtonColor: '#ef4444'
               });
@@ -764,8 +715,8 @@
             
             if (this.programIsFull) {
               Swal.fire({
-                title: 'Program Had Penuh!',
-                text: 'Maaf, kuota anggota bagi tugasan ini telah mencapai had maksimum. Sila pilih tugasan program lain.',
+                title: 'Kuota Program Penuh!',
+                text: 'Maaf, kuota anggota untuk tugas ini telah mencapai batas maksimal. Silakan pilih program lain.',
                 icon: 'warning',
                 confirmButtonColor: '#ef4444'
               });
@@ -775,8 +726,8 @@
 
         // Buka Portal Urus Setia
         bukaAdminVault() {
-          if (!this.gasUrl) {
-            Swal.fire({ title: 'Gagal!', text: 'Sila masukkan pautan pelayan GAS terlebih dahulu.', icon: 'warning', confirmButtonColor: '#f59e0b' });
+          if (!this.gasUrl || this.gasUrl.includes("YourActualIDHere")) {
+            Swal.fire({ title: 'Gagal!', text: 'Sila tetapkan GAS_URL pada baris kode 733 terlebih dahulu.', icon: 'warning', confirmButtonColor: '#f59e0b' });
             return;
           }
           
@@ -810,11 +761,10 @@
                   if (data.success) {
                     this.isAdmin = true;
                     this.tab = 'program';
-                    // Simpan kunci penyulitan sesi dalam memori jangka pendek
                     sessionStorage.setItem('rela_session_pin', enteredPin);
                     Swal.fire({
                       title: 'Akses Pentadbir Dibuka!',
-                      text: 'Identiti disahkan. Urusan program dan log kehadiran diaktifkan.',
+                      text: 'Identiti disahkan. Urusan program dan log pendaftaran diaktifkan.',
                       icon: 'success',
                       confirmButtonColor: '#10b981'
                     });
@@ -842,13 +792,13 @@
         // PROSES AWAN: Tambah Program Baru ke Google Sheets
         tambahProgramAwan() {
           const tajukBaru = this.baruProgramInput.trim().toUpperCase();
-          const capBaru = parseInt(this.baruProgramCapacity);
+          const pKuota = parseInt(this.baruProgramCapacity);
           const tarikhBaru = this.baruProgramDate;
           const masaBaru = this.baruProgramTime;
           const lokasiBaru = this.baruProgramLocation.trim().toUpperCase();
 
-          if (!tajukBaru || isNaN(capBaru) || capBaru < 1 || !tarikhBaru || !masaBaru || !lokasiBaru) {
-            Swal.fire({ title: 'Input Tidak Lengkap!', text: 'Sila pastikan semua butiran diisi.', icon: 'error', confirmButtonColor: '#ef4444' });
+          if (!tajukBaru || isNaN(pKuota) || pKuota < 1 || !tarikhBaru || !masaBaru || !lokasiBaru) {
+            Swal.fire({ title: 'Data Tidak Lengkap!', text: 'Harap pastikan semua kolom terisi dengan benar.', icon: 'error', confirmButtonColor: '#ef4444' });
             return;
           }
 
@@ -860,7 +810,7 @@
           formData.append('action', 'addProgram');
           formData.append('pin', pin);
           formData.append('name', tajukBaru);
-          formData.append('capacity', capBaru);
+          formData.append('capacity', pKuota);
           formData.append('date', tarikhBaru);
           formData.append('time', masaBaru);
           formData.append('location', lokasiBaru);
@@ -901,9 +851,9 @@
         // PROSES AWAN: Simpan Perubahan Maklumat Program Yang Diedit ke Google Sheets
         simpanEditProgramAwan() {
           const updatedLocation = this.editModal.location.trim().toUpperCase();
-          const updatedCapacity = parseInt(this.editModal.capacity);
+          const pKuota = parseInt(this.editModal.capacity);
 
-          if (!updatedLocation || isNaN(updatedCapacity) || updatedCapacity < 1 || !this.editModal.date || !this.editModal.time) {
+          if (!updatedLocation || isNaN(pKuota) || pKuota < 1 || !this.editModal.date || !this.editModal.time) {
             Swal.fire({ title: 'Ralat!', text: 'Sila lengkapkan semua butiran.', icon: 'error' });
             return;
           }
@@ -916,7 +866,7 @@
           formData.append('action', 'editProgram');
           formData.append('pin', pin);
           formData.append('name', this.editModal.name);
-          formData.append('capacity', updatedCapacity);
+          formData.append('capacity', pKuota);
           formData.append('date', this.editModal.date);
           formData.append('time', this.editModal.time);
           formData.append('location', updatedLocation);
@@ -943,7 +893,7 @@
         padamProgramAwan(programName) {
           Swal.fire({
             title: 'Padam Program?',
-            text: `Adakah anda pasti mahu memadam program "${programName}" dari Google Sheets?`,
+            text: `Adakah anda pasti mahu memadam program "${programName}" dari Google Sheets secara kekal?`,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#ef4444',
@@ -987,12 +937,12 @@
         // PROSES AWAN: Tukar PIN Keselamatan Pentadbir
         tukarPinAwan() {
           if (this.pinForm.new.length < 4) {
-            Swal.fire({ title: 'Terlalu Pendek!', text: 'PIN baharu sekurang-kurangnya 4 angka.', icon: 'error' });
+            Swal.fire({ title: 'PIN Terlalu Pendek!', text: 'PIN baru minimal harus terdiri dari 4 angka.', icon: 'error' });
             return;
           }
 
           if (this.pinForm.new !== this.pinForm.confirm) {
-            Swal.fire({ title: 'Ralat Padanan!', text: 'Pengesahan PIN tidak sepadan.', icon: 'error' });
+            Swal.fire({ title: 'Ralat Padanan!', text: 'Pengesahan PIN baharu anda tidak sepadan.', icon: 'error' });
             return;
           }
 
@@ -1040,7 +990,7 @@
             if (res.isConfirmed) {
               const pin = sessionStorage.getItem('rela_session_pin');
               this.loading = true;
-              this.loadingMsg = 'Memadam semua log kehadiran...';
+              this.loadingMsg = 'Memadam semua log pendaftaran...';
 
               const formData = new FormData();
               formData.append('action', 'clearLogs');
@@ -1094,7 +1044,7 @@
         // PROSES AWAN: Hantar Borang Kehadiran Anggota ke Google Sheets
         prosesPenyerahan() {
           if (!this.form.program) {
-            return Swal.fire({ title: 'Ralat!', text: 'Sila pilih program terlebih dahulu.', icon: 'warning' });
+            return Swal.fire({ title: 'Kesalahan!', text: 'Silakan pilih program terlebih dahulu.', icon: 'warning', confirmButtonColor: '#f59e0b', customClass: { popup: 'rounded-3xl' } });
           }
 
           const target = this.programList.find(p => p.name === this.form.program);
@@ -1102,21 +1052,21 @@
             const nowKL = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kuala_Lumpur' }));
             const progDateTime = new Date(`${target.date}T${target.time}`);
             if (progDateTime < nowKL) {
-              return Swal.fire({ title: 'Ditolak!', text: 'Maaf, program ini telah tamat.', icon: 'error', confirmButtonColor: '#ef4444' });
+              return Swal.fire({ title: 'Ditolak!', text: 'Maaf, program ini telah berakhir.', icon: 'error', confirmButtonColor: '#ef4444', customClass: { popup: 'rounded-3xl' } });
             }
 
             if (this.getRegisteredCount(this.form.program) >= target.capacity) {
               this.programIsFull = true;
-              return Swal.fire({ title: 'Ditolak!', text: 'Maaf, program ini telah penuh.', icon: 'error', confirmButtonColor: '#ef4444' });
+              return Swal.fire({ title: 'Ditolak!', text: 'Maaf, kuota program ini telah penuh.', icon: 'error', confirmButtonColor: '#ef4444', customClass: { popup: 'rounded-3xl' } });
             }
           }
 
           if (this.form.kp.length !== 12) {
-            return Swal.fire({ title: 'Ralat KP!', text: 'No. Kad Pengenalan mestilah tepat 12 digit.', icon: 'error', confirmButtonColor: '#ef4444' });
+            return Swal.fire({ title: 'Format MyKad/KTP Salah!', text: 'Nomor identitas harus tepat 12 digit.', icon: 'error', confirmButtonColor: '#ef4444', customClass: { popup: 'rounded-3xl' } });
           }
 
           if (!this.form.tel.startsWith('01') || this.form.tel.length < 10) {
-            return Swal.fire({ title: 'Ralat Telefon!', text: 'Sila masukkan no telefon bimbit yang sah (Mulai 01).', icon: 'error', confirmButtonColor: '#ef4444' });
+            return Swal.fire({ title: 'Format Telepon Salah!', text: 'Silakan masukkan nomor telepon seluler yang valid (dimulai dengan 01).', icon: 'error', confirmButtonColor: '#ef4444', customClass: { popup: 'rounded-3xl' } });
           }
 
           const tarikhStandard = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kuala_Lumpur' });
@@ -1124,14 +1074,14 @@
           const formattedTimestamp = `${String(dObj.getDate()).padStart(2, '0')}/${String(dObj.getMonth()+1).padStart(2, '0')}/${dObj.getFullYear()}, ${dObj.toLocaleTimeString('ms-MY', {hour: '2-digit', minute:'2-digit', second:'2-digit'})}`;
 
           this.loading = true;
-          this.loadingMsg = 'Merekodkan kehadiran anda ke Google Sheets...';
+          this.loadingMsg = 'Mendaftarkan kehadiran Anda ke server Google Sheets...';
 
           const formData = new FormData();
           formData.append('action', 'registerAttendance');
           formData.append('program', this.form.program);
           formData.append('nama', this.form.nama.trim());
-          formData.append('kp', "'" + this.form.kp.trim()); // Pengekalan sifar hadapan
-          formData.append('tel', "'" + this.form.tel.trim()); // Pengekalan sifar hadapan
+          formData.append('kp', "'" + this.form.kp.trim()); // Mempertahankan sifar hadapan
+          formData.append('tel', "'" + this.form.tel.trim()); // Mempertahankan sifar hadapan
           formData.append('timestamp', formattedTimestamp);
 
           fetch(this.gasUrl, { method: 'POST', body: formData })
@@ -1140,20 +1090,21 @@
               this.loading = false;
               if (data.success) {
                 Swal.fire({
-                  title: 'Kehadiran Direkod!',
-                  text: 'Pendaftaran anda berjaya didaftarkan secara real-time ke dalam Google Sheets Pejabat.',
+                  title: 'Kehadiran Tercatat!',
+                  text: 'Pendaftaran Anda berhasil disimpan secara real-time ke Google Sheets Kantor.',
                   icon: 'success',
-                  confirmButtonColor: '#10b981'
+                  confirmButtonColor: '#10b981',
+                  customClass: { popup: 'rounded-3xl' }
                 });
                 this.setSemulaBorang();
                 this.muatTurunDataAwan();
               } else {
-                Swal.fire({ title: 'Gagal!', text: data.msg || 'Gagal menyimpan.', icon: 'error' });
+                Swal.fire({ title: 'Gagal!', text: data.msg || 'Gagal menyimpan data.', icon: 'error', confirmButtonColor: '#ef4444', customClass: { popup: 'rounded-3xl' } });
               }
             })
             .catch(() => {
               this.loading = false;
-              Swal.fire({ title: 'Ralat Rangkaian!', text: 'Tidak dapat menghubungi pelayan pangkalan data.', icon: 'error' });
+              Swal.fire({ title: 'Kesalahan Jaringan!', text: 'Tidak dapat menghubungi server pangkalan data.', icon: 'error', confirmButtonColor: '#ef4444', customClass: { popup: 'rounded-3xl' } });
             });
         },
 

@@ -129,25 +129,50 @@
               </div>
             </div>
             
-            <!-- ================= SISTEM INDIKATOR KAPASITI ANGGOTA (LIVE COUNT) ================= -->
-            <div x-show="form.program" x-transition class="mt-4 p-4 bg-slate-900/80 rounded-2xl border border-white/5 space-y-3">
-              <div class="flex justify-between items-center text-[10px] font-black uppercase tracking-wider">
-                <span class="text-slate-400"><i class="fas fa-users-viewfinder mr-1.5 text-blue-400"></i> Status Kapasiti</span>
-                <span :class="programIsFull ? 'text-rose-400' : 'text-blue-400'" x-text="`Kapasiti: ${currentRegCount} / ${currentCapacity} Anggota`"></span>
+            <!-- ================= SISTEM INDIKATOR BUTIRAN & KAPASITI ANGGOTA (LIVE COUNT + TARIKH MASA) ================= -->
+            <div x-show="form.program" x-transition class="mt-4 p-5 bg-slate-900/80 rounded-2xl border border-white/5 space-y-4">
+              
+              <!-- Bahagian Paparan Tarikh & Masa Program -->
+              <div class="grid grid-cols-2 gap-4 border-b border-white/5 pb-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400">
+                    <i class="fas fa-calendar-day text-xs"></i>
+                  </div>
+                  <div>
+                    <span class="block text-[8px] font-black text-slate-500 uppercase tracking-widest">Tarikh Acara</span>
+                    <span class="text-xs font-extrabold text-slate-200" x-text="formatTarikh(currentDate)"></span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-400">
+                    <i class="fas fa-clock text-xs"></i>
+                  </div>
+                  <div>
+                    <span class="block text-[8px] font-black text-slate-500 uppercase tracking-widest">Masa Lapor</span>
+                    <span class="text-xs font-extrabold text-slate-200" x-text="formatMasa(currentTime)"></span>
+                  </div>
+                </div>
               </div>
 
               <!-- Bar Kemajuan Visual Dinamik -->
-              <div class="w-full h-2.5 bg-slate-950 rounded-full overflow-hidden relative border border-white/5">
-                <div class="h-full rounded-full transition-all duration-500 ease-out" 
-                     :class="programIsFull ? 'bg-gradient-to-r from-rose-600 to-red-500 progress-bar-full-glow' : 'bg-gradient-to-r from-blue-600 to-indigo-500 progress-bar-glow'"
-                     :style="`width: ${Math.min((currentRegCount / currentCapacity) * 100, 100)}%`">
+              <div class="space-y-2">
+                <div class="flex justify-between items-center text-[10px] font-black uppercase tracking-wider">
+                  <span class="text-slate-400"><i class="fas fa-users-viewfinder mr-1.5 text-blue-400"></i> Status Kuota Anggota</span>
+                  <span :class="programIsFull ? 'text-rose-400' : 'text-blue-400'" x-text="`Kapasiti: ${currentRegCount} / ${currentCapacity} Orang`"></span>
+                </div>
+                
+                <div class="w-full h-2.5 bg-slate-950 rounded-full overflow-hidden relative border border-white/5">
+                  <div class="h-full rounded-full transition-all duration-500 ease-out" 
+                       :class="programIsFull ? 'bg-gradient-to-r from-rose-600 to-red-500 progress-bar-full-glow' : 'bg-gradient-to-r from-blue-600 to-indigo-500 progress-bar-glow'"
+                       :style="`width: ${Math.min((currentRegCount / currentCapacity) * 100, 100)}%`">
+                  </div>
                 </div>
               </div>
 
               <!-- Status Ringkasan Sisa Slot -->
               <div class="flex justify-between items-center text-[9px] font-bold uppercase tracking-widest pt-1">
-                <span class="text-slate-500" x-text="`Baki Slot: ${Math.max(currentCapacity - currentRegCount, 0)} kekosongan`"></span>
-                <span x-show="programIsFull" class="text-rose-500 font-extrabold animate-pulse"><i class="fas fa-triangle-exclamation mr-1"></i> PROGRAM PENUH! PENDAFTARAN DITUTUP</span>
+                <span class="text-slate-500" x-text="`Baki Kekosongan: ${Math.max(currentCapacity - currentRegCount, 0)} Slot`"></span>
+                <span x-show="programIsFull" class="text-rose-500 font-extrabold animate-pulse"><i class="fas fa-triangle-exclamation mr-1"></i> HAD PENUH! SURAT DAFTAR DIKUNCI</span>
                 <span x-show="!programIsFull" class="text-emerald-400 font-extrabold"><i class="fas fa-circle-check mr-1"></i> Pendaftaran Terbuka</span>
               </div>
             </div>
@@ -200,26 +225,38 @@
         </form>
       </div>
 
-      <!-- ================= STREAMING_CHUNK: Membina halaman pengurus program admin... ================= -->
       <!-- ================= TAB 2: URUS PROGRAM (ADMIN PORTAL SAHAJA) ================= -->
       <div x-show="tab === 'program' && isAdmin" x-transition class="glass-card rounded-[2.5rem] p-6 sm:p-8 shadow-2xl">
         <div class="border-b border-white/5 pb-5 mb-6">
-          <h3 class="text-lg font-black text-white uppercase tracking-wider"><i class="fas fa-calendar-plus text-amber-400 mr-2"></i>Urus Program & Kapasiti</h3>
-          <p class="text-[10px] font-bold text-slate-400 uppercase mt-1">Daftar tajuk acara baharu berserta had muatan kapasiti bertugas (Diperlukan Token)</p>
+          <h3 class="text-lg font-black text-white uppercase tracking-wider"><i class="fas fa-calendar-plus text-amber-400 mr-2"></i>Urus Program, Jadual & Kapasiti</h3>
+          <p class="text-[10px] font-bold text-slate-400 uppercase mt-1">Daftar tajuk acara, tarikh, masa dan muatan kapasiti petugas</p>
         </div>
 
         <!-- Borang Tambah Program Baru -->
         <form @submit.prevent="tambahProgramSesi" class="space-y-4 mb-6">
-          <div class="grid sm:grid-cols-3 gap-4">
+          <div class="grid grid-cols-1 gap-4">
             <!-- Tajuk Program -->
-            <div class="sm:col-span-2">
-              <label class="block text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2 mb-2">Tajuk Program Baru</label>
-              <input type="text" x-model="baruProgramInput" @input="baruProgramInput = $event.target.value.toUpperCase()" required placeholder="CONTOH: PERBARISAN HARI KEBANGSAAN" class="w-full px-5 py-4 glass-input rounded-2xl text-xs font-black text-white placeholder:text-slate-600 outline-none uppercase">
-            </div>
-            <!-- Kapasiti -->
             <div>
-              <label class="block text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2 mb-2">Kapasiti (Had)</label>
-              <input type="number" x-model.number="baruProgramCapacity" required min="1" max="500" placeholder="50" class="w-full px-5 py-4 glass-input rounded-2xl text-xs font-black text-white placeholder:text-slate-600 outline-none">
+              <label class="block text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2 mb-2">Tajuk Program Baru *</label>
+              <input type="text" x-model="baruProgramInput" @input="baruProgramInput = $event.target.value.toUpperCase()" required placeholder="CONTOH: PROGRAM KHIDMAT KAWALAN TRAFIK BATU PAHAT" class="w-full px-5 py-4 glass-input rounded-2xl text-xs font-black text-white placeholder:text-slate-600 outline-none uppercase">
+            </div>
+            
+            <div class="grid sm:grid-cols-3 gap-4">
+              <!-- Tarikh Program -->
+              <div>
+                <label class="block text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2 mb-2">Tarikh Acara *</label>
+                <input type="date" x-model="baruProgramDate" required class="w-full px-5 py-3.5 glass-input rounded-2xl text-xs font-bold text-white outline-none cursor-pointer">
+              </div>
+              <!-- Masa Program -->
+              <div>
+                <label class="block text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2 mb-2">Masa Lapor Diri *</label>
+                <input type="time" x-model="baruProgramTime" required class="w-full px-5 py-3.5 glass-input rounded-2xl text-xs font-bold text-white outline-none cursor-pointer">
+              </div>
+              <!-- Kapasiti -->
+              <div>
+                <label class="block text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2 mb-2">Kapasiti (Orang) *</label>
+                <input type="number" x-model.number="baruProgramCapacity" required min="1" max="500" placeholder="50" class="w-full px-5 py-3.5 glass-input rounded-2xl text-xs font-black text-white placeholder:text-slate-600 outline-none">
+              </div>
             </div>
           </div>
           <button type="submit" class="w-full py-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-2xl font-black text-xs uppercase tracking-[0.15em] transition-all shadow-lg flex items-center justify-center gap-2">
@@ -237,10 +274,12 @@
                   <span class="px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 text-[8px] font-black" x-text="index + 1"></span>
                   <span class="text-xs font-black text-white uppercase" x-text="p.name"></span>
                 </div>
-                <!-- Maklumat status kapasiti di urus program admin -->
-                <div class="flex items-center gap-3 text-[9px] font-bold uppercase mt-1">
-                  <span class="text-slate-400"><i class="fas fa-user-check mr-1 text-blue-400"></i>Terdaftar: <strong class="text-white" x-text="getRegisteredCount(p.name)"></strong></span>
-                  <span class="text-slate-400"><i class="fas fa-chart-bar mr-1 text-amber-400"></i>Had Kapasiti: <strong class="text-white" x-text="p.capacity"></strong></span>
+                
+                <!-- Butiran Masa & Tarikh Program di Panel Admin -->
+                <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-[9px] font-bold uppercase mt-1 text-slate-400">
+                  <span><i class="fas fa-calendar-day mr-1 text-indigo-400"></i><strong class="text-slate-300" x-text="formatTarikh(p.date)"></strong></span>
+                  <span><i class="fas fa-clock mr-1 text-indigo-400"></i><strong class="text-slate-300" x-text="formatMasa(p.time)"></strong></span>
+                  <span><i class="fas fa-user-check mr-1 text-blue-400"></i>Terdaftar: <strong class="text-white" x-text="getRegisteredCount(p.name)"></strong> / <span x-text="p.capacity"></span></span>
                   <span :class="getRegisteredCount(p.name) >= p.capacity ? 'text-rose-400 bg-rose-500/10' : 'text-emerald-400 bg-emerald-500/10'" class="px-2 py-0.2 rounded text-[7px] font-black border border-white/5" x-text="getRegisteredCount(p.name) >= p.capacity ? 'PENUH' : 'ADA SLOT'"></span>
                 </div>
               </div>
@@ -256,7 +295,6 @@
         </div>
       </div>
 
-      <!-- ================= STREAMING_CHUNK: Membina panel paparan log pendaftaran... ================= -->
       <!-- ================= TAB 3: LOG REKOD KEHADIRAN (ADMIN PORTAL SAHAJA) ================= -->
       <div x-show="tab === 'arkib' && isAdmin" x-transition class="glass-card rounded-[2.5rem] p-6 sm:p-8 shadow-2xl">
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/5 pb-6 mb-6">
@@ -308,7 +346,6 @@
         </div>
       </div>
 
-      <!-- ================= STREAMING_CHUNK: Membina halaman tetapan dan penukaran PIN pentadbir... ================= -->
       <!-- ================= TAB 4: TETAPAN GOOGLE APPS SCRIPT & PIN KESELAMATAN (ADMIN PORTAL) ================= -->
       <div x-show="tab === 'tetapan' && isAdmin" x-transition class="glass-card rounded-[2.5rem] p-6 sm:p-8 shadow-2xl">
         <div class="border-b border-white/5 pb-5 mb-5">
@@ -374,7 +411,6 @@
     </button>
   </footer>
 
-  <!-- ================= STREAMING_CHUNK: Menyediakan logik JavaScript dwi-sesi... ================= -->
   <!-- ================= LOGIK INTEGRASI KEADAAN (ALPINEJS) ================= -->
   <script>
     function appManager() {
@@ -384,13 +420,19 @@
         isAdmin: false,
         gasUrl: '',
         carian: '',
+        
+        // Form Input Program Baru Admin
         baruProgramInput: '',
         baruProgramCapacity: 50,
+        baruProgramDate: '',
+        baruProgramTime: '',
         
-        // Pembolehubah Reactive Terpilih untuk Had Kapasiti
+        // Pembolehubah Reactive Terpilih untuk Had Kapasiti & Masa Dinamik
         currentCapacity: 0,
         currentRegCount: 0,
         programIsFull: false,
+        currentDate: '',
+        currentTime: '',
 
         // Sistem Kredential Admin
         adminPin: '1234',
@@ -431,16 +473,22 @@
             localStorage.setItem('bt_pahat_log_kehadiran', JSON.stringify(this.senaraiRekod));
           }
 
-          // 4. Muatkan senarai Program Aktif (Dilengkapi Had Kapasiti)
+          // 4. Muatkan senarai Program Aktif (Dilengkapi Had Kapasiti, Tarikh & Masa)
           const progDaftar = localStorage.getItem('bt_pahat_program_list');
           if (progDaftar) {
             try {
               const parsed = JSON.parse(progDaftar);
               this.programList = parsed.map(p => {
+                // Beri nilai lalai (default values) jika struktur program lama belum ada tarikh/masa
                 if (typeof p === 'string') {
-                  return { name: p, capacity: 50 };
+                  return { name: p, capacity: 50, date: '2026-06-15', time: '08:00' };
                 }
-                return p;
+                return {
+                  name: p.name,
+                  capacity: p.capacity || 50,
+                  date: p.date || '2026-06-15',
+                  time: p.time || '08:00'
+                };
               });
             } catch (e) {
               this.binaProgramLalai();
@@ -452,11 +500,39 @@
 
         binaProgramLalai() {
           this.programList = [
-            { name: "PERBARISAN BULANAN ANGGOTA RELA DAERAH", capacity: 50 },
-            { name: "LATIHAN MENEMBAK TAHUNAN RELA DAERAH BATU PAHAT", capacity: 10 },
-            { name: "PROGRAM KHIDMAT KOMUNITI & KESELAMATAN DAERAH", capacity: 30 }
+            { name: "PERBARISAN BULANAN ANGGOTA RELA DAERAH", capacity: 50, date: '2026-06-15', time: '08:00' },
+            { name: "LATIHAN MENEMBAK TAHUNAN RELA DAERAH BATU PAHAT", capacity: 10, date: '2026-06-20', time: '09:00' },
+            { name: "PROGRAM KHIDMAT KOMUNITI & KESELAMATAN DAERAH", capacity: 30, date: '2026-06-25', time: '14:30' }
           ];
           localStorage.setItem('bt_pahat_program_list', JSON.stringify(this.programList));
+        },
+
+        // Helper memformat tarikh YYYY-MM-DD ke DD/MM/YYYY
+        formatTarikh(dateStr) {
+          if (!dateStr) return '-';
+          const parts = dateStr.split('-');
+          if (parts.length !== 3) return dateStr;
+          return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        },
+
+        // Helper memformat masa 24 jam ke format AM/PM Bahasa Melayu
+        formatMasa(timeStr) {
+          if (!timeStr) return '-';
+          const [hourStr, minStr] = timeStr.split(':');
+          let hour = parseInt(hourStr);
+          const min = minStr;
+          let suffix = 'PAGI';
+          
+          if (hour >= 12) {
+            if (hour > 12) hour -= 12;
+            if (hour >= 1 && hour < 6) suffix = 'PETANG';
+            else if (hour >= 6 && hour < 8) suffix = 'SENJA/PETANG';
+            else suffix = 'MALAM';
+          } else {
+            if (hour === 0) hour = 12;
+            if (hour >= 11) suffix = 'TENGAH HARI';
+          }
+          return `${String(hour).padStart(2, '0')}:${min} ${suffix}`;
         },
 
         // Mengira secara live jumlah yang telah berdaftar bagi sesuatu program
@@ -470,12 +546,16 @@
             this.currentCapacity = 0;
             this.currentRegCount = 0;
             this.programIsFull = false;
+            this.currentDate = '';
+            this.currentTime = '';
             return;
           }
 
           const target = this.programList.find(p => p.name === this.form.program);
           if (target) {
             this.currentCapacity = target.capacity;
+            this.currentDate = target.date;
+            this.currentTime = target.time;
             this.currentRegCount = this.getRegisteredCount(this.form.program);
             this.programIsFull = (this.currentRegCount >= this.currentCapacity);
             
@@ -522,7 +602,6 @@
             customClass: { popup: 'rounded-3xl' }
           }).then((result) => {
             if (result.isConfirmed) {
-              // PIN disemak secara dinamik (Default: 1234, atau nilai baru jika telah ditukar di tab Tetapan)
               if (result.value === this.adminPin) {
                 this.isAdmin = true;
                 this.tab = 'program';
@@ -619,9 +698,11 @@
         tambahProgramSesi() {
           const tajukBaru = this.baruProgramInput.trim().toUpperCase();
           const capBaru = parseInt(this.baruProgramCapacity);
+          const tarikhBaru = this.baruProgramDate;
+          const masaBaru = this.baruProgramTime;
 
-          if (!tajukBaru || isNaN(capBaru) || capBaru < 1) {
-            Swal.fire({ title: 'Input Tidak Sah!', text: 'Sila masukkan tajuk program dan had kapasiti yang betul.', icon: 'error', confirmButtonColor: '#ef4444' });
+          if (!tajukBaru || isNaN(capBaru) || capBaru < 1 || !tarikhBaru || !masaBaru) {
+            Swal.fire({ title: 'Input Tidak Lengkap!', text: 'Sila pastikan Tajuk, Tarikh, Masa, dan Kapasiti diisi dengan lengkap.', icon: 'error', confirmButtonColor: '#ef4444' });
             return;
           }
 
@@ -636,15 +717,23 @@
             return;
           }
 
-          this.programList.push({ name: tajukBaru, capacity: capBaru });
+          // Simpan objek program dengan metadata lengkap
+          this.programList.push({ 
+            name: tajukBaru, 
+            capacity: capBaru, 
+            date: tarikhBaru, 
+            time: masaBaru 
+          });
           localStorage.setItem('bt_pahat_program_list', JSON.stringify(this.programList));
           
           this.baruProgramInput = '';
           this.baruProgramCapacity = 50;
+          this.baruProgramDate = '';
+          this.baruProgramTime = '';
 
           Swal.fire({
             title: 'Program Berjaya Ditambah!',
-            text: 'Butiran acara dan kapasiti telah aktif pada borang pilihan.',
+            text: 'Butiran acara, tarikh, masa lapor dan kapasiti telah aktif pada borang pilihan.',
             icon: 'success',
             confirmButtonColor: '#10b981',
             customClass: { popup: 'rounded-3xl' }

@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ms" class="h-full bg-slate-950">
 <head>
@@ -62,7 +63,7 @@
       <div class="absolute inset-0 border-4 border-slate-800 rounded-full"></div>
       <div class="absolute inset-0 border-4 border-t-amber-500 border-r-blue-600 rounded-full animate-spin"></div>
     </div>
-    <p class="mt-6 text-xs font-black text-slate-400 uppercase tracking-[0.4em] animate-pulse">Memproses Data Urus Setia...</p>
+    <p class="mt-6 text-xs font-black text-slate-400 uppercase tracking-[0.4em] animate-pulse">Memproses Tindakan Urus Setia...</p>
   </div>
 
   <!-- ================= RANGKA HEADER UTAMA ================= -->
@@ -89,7 +90,7 @@
         <i class="fas fa-database mr-1.5"></i>Log Rekod
       </button>
       <button @click="tab = 'tetapan'" :class="tab === 'tetapan' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'" class="px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all">
-        <i class="fas fa-gears mr-1.5"></i>GAS
+        <i class="fas fa-gears mr-1.5"></i>GAS / PIN
       </button>
       <button @click="logKeluarAdmin" class="px-4 py-2.5 rounded-xl text-[10px] font-black text-rose-400 hover:bg-rose-500/10 uppercase tracking-wider transition-all" title="Keluar Sesi Admin">
         <i class="fas fa-right-from-bracket"></i>
@@ -306,14 +307,15 @@
         </div>
       </div>
 
-      <!-- ================= TAB 4: TETAPAN GOOGLE APPS SCRIPT (ADMIN SAHAJA) ================= -->
+      <!-- ================= TAB 4: TETAPAN GOOGLE APPS SCRIPT & PIN KESELAMATAN (ADMIN PORTAL) ================= -->
       <div x-show="tab === 'tetapan' && isAdmin" x-transition class="glass-card rounded-[2.5rem] p-6 sm:p-8 shadow-2xl">
         <div class="border-b border-white/5 pb-5 mb-5">
-          <h3 class="text-lg font-black text-white uppercase tracking-wider"><i class="fas fa-network-wired text-indigo-400 mr-2"></i>Penyambungan GAS Backend</h3>
-          <p class="text-[10px] font-bold text-slate-400 uppercase mt-1">Selaraskan pangkalan data dengan Google Spreadsheet Daerah</p>
+          <h3 class="text-lg font-black text-white uppercase tracking-wider"><i class="fas fa-network-wired text-indigo-400 mr-2"></i>Penyambungan GAS & Profil</h3>
+          <p class="text-[10px] font-bold text-slate-400 uppercase mt-1">Selaraskan pangkalan data daerah dan tukar PIN keselamatan pintu masuk</p>
         </div>
 
-        <div class="space-y-4">
+        <div class="space-y-5">
+          <!-- Ruangan Google Apps Script URL -->
           <div>
             <label class="block text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2 mb-2">Google Web App URL</label>
             <input type="url" x-model="gasUrl" @change="simpanGasUrl" placeholder="https://script.google.com/macros/s/.../exec" class="w-full px-5 py-4 glass-input rounded-2xl text-xs font-mono text-white placeholder:text-slate-700 outline-none">
@@ -322,6 +324,37 @@
           <div class="flex items-center gap-3 p-4 bg-slate-900/60 rounded-xl border border-white/5">
             <div class="w-2.5 h-2.5 rounded-full" :class="gasUrl ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'"></div>
             <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest" x-text="gasUrl ? 'STATUS: SISTEM DISAMBUNGKAN KE SPREADSHEET' : 'STATUS: MOD SIMULASI TEMPATAN (LOCAL STORAGE DIBUKA)'"></p>
+          </div>
+
+          <!-- ================= BORANG TUKAR PASSWORD/PIN KESELAMATAN PENTADBIR ================= -->
+          <div class="mt-6 p-5 bg-slate-900/80 rounded-2xl border border-white/5 space-y-4">
+            <h4 class="text-xs font-black text-amber-400 uppercase tracking-widest flex items-center gap-2">
+              <i class="fas fa-key"></i> Kemas Kini PIN Keselamatan Admin
+            </h4>
+            <p class="text-[9px] font-bold text-slate-400 uppercase">PIN ini digunakan di bahagian footer halaman untuk membuka panel tadbiran urus setia.</p>
+
+            <form @submit.prevent="tukarPinAdmin" class="space-y-4">
+              <div class="grid sm:grid-cols-3 gap-4">
+                <!-- PIN Semasa -->
+                <div>
+                  <label class="block text-[9px] font-black uppercase text-slate-500 tracking-wider mb-1.5 ml-1">PIN Semasa</label>
+                  <input type="password" x-model="pinForm.old" required placeholder="••••" class="w-full px-4 py-3 bg-slate-950 border border-white/5 rounded-xl text-xs font-mono text-white outline-none focus:border-blue-500">
+                </div>
+                <!-- PIN Baharu -->
+                <div>
+                  <label class="block text-[9px] font-black uppercase text-slate-500 tracking-wider mb-1.5 ml-1">PIN Baharu</label>
+                  <input type="password" x-model="pinForm.new" required placeholder="MIN 4 ANGKA" class="w-full px-4 py-3 bg-slate-950 border border-white/5 rounded-xl text-xs font-mono text-white outline-none focus:border-blue-500">
+                </div>
+                <!-- Sahkan PIN -->
+                <div>
+                  <label class="block text-[9px] font-black uppercase text-slate-500 tracking-wider mb-1.5 ml-1">Sahkan PIN</label>
+                  <input type="password" x-model="pinForm.confirm" required placeholder="ULANG PIN" class="w-full px-4 py-3 bg-slate-950 border border-white/5 rounded-xl text-xs font-mono text-white outline-none focus:border-blue-500">
+                </div>
+              </div>
+              <button type="submit" class="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-500 hover:to-indigo-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-md">
+                Simpan PIN Baharu
+              </button>
+            </form>
           </div>
         </div>
       </div>
@@ -356,6 +389,14 @@
         currentRegCount: 0,
         programIsFull: false,
 
+        // Sistem Kredential Admin
+        adminPin: '1234',
+        pinForm: {
+          old: '',
+          new: '',
+          confirm: ''
+        },
+
         form: {
           program: '',
           nama: '',
@@ -371,7 +412,11 @@
           const simpananUrl = localStorage.getItem('bt_pahat_gas_url');
           if (simpananUrl) this.gasUrl = simpananUrl;
 
-          // 2. Muatkan senarai Kehadiran Log
+          // 2. Muatkan PIN Keselamatan Pentadbir (Default: 1234 jika tiada)
+          const simpananPin = localStorage.getItem('bt_pahat_admin_pin');
+          if (simpananPin) this.adminPin = simpananPin;
+
+          // 3. Muatkan senarai Kehadiran Log
           const logTempatan = localStorage.getItem('bt_pahat_log_kehadiran');
           if (logTempatan) {
             this.senaraiRekod = JSON.parse(logTempatan);
@@ -383,12 +428,11 @@
             localStorage.setItem('bt_pahat_log_kehadiran', JSON.stringify(this.senaraiRekod));
           }
 
-          // 3. Muatkan senarai Program Aktif (Dilengkapi Had Kapasiti)
+          // 4. Muatkan senarai Program Aktif (Dilengkapi Had Kapasiti)
           const progDaftar = localStorage.getItem('bt_pahat_program_list');
           if (progDaftar) {
             try {
               const parsed = JSON.parse(progDaftar);
-              // Migrasi jika struktur program lama (string) ditemui
               this.programList = parsed.map(p => {
                 if (typeof p === 'string') {
                   return { name: p, capacity: 50 };
@@ -444,7 +488,7 @@
           }
         },
 
-        // Pintu Keselamatan PIN Portal (Default PIN: 1234)
+        // Pintu Keselamatan PIN Portal (Menggunakan PIN dinamik daripada local storage)
         bukaAdminVault() {
           if (this.isAdmin) {
             Swal.fire({
@@ -461,9 +505,9 @@
             title: 'Portal Urus Setia',
             text: 'Sila masukkan PIN Keselamatan Pentadbir:',
             input: 'password',
-            inputPlaceholder: 'PIN KESELAMATAN (DEFAULT: 1234)',
+            inputPlaceholder: 'PIN KESELAMATAN',
             inputAttributes: {
-              maxlength: '6',
+              maxlength: '20',
               autocapitalize: 'off',
               autocorrect: 'off'
             },
@@ -475,7 +519,7 @@
             customClass: { popup: 'rounded-3xl' }
           }).then((result) => {
             if (result.isConfirmed) {
-              if (result.value === '1234') {
+              if (result.value === this.adminPin) {
                 this.isAdmin = true;
                 this.tab = 'program';
                 Swal.fire({
@@ -508,6 +552,62 @@
             text: 'Antaramuka dikunci kembali kepada Mod Anggota.',
             icon: 'info',
             confirmButtonColor: '#3b82f6',
+            customClass: { popup: 'rounded-3xl' }
+          });
+        },
+
+        // PENGURUSAN TUKAR PIN KESELAMATAN ADMIN
+        tukarPinAdmin() {
+          // 1. Sahkan PIN lama betul
+          if (this.pinForm.old !== this.adminPin) {
+            Swal.fire({
+              title: 'Ralat PIN Lama!',
+              text: 'PIN Semasa yang dimasukkan adalah salah.',
+              icon: 'error',
+              confirmButtonColor: '#ef4444',
+              customClass: { popup: 'rounded-3xl' }
+            });
+            return;
+          }
+
+          // 2. Sahkan panjang PIN baru sah
+          if (this.pinForm.new.length < 4) {
+            Swal.fire({
+              title: 'PIN Terlalu Pendek!',
+              text: 'PIN Keselamatan baharu mestilah mengandungi sekurang-kurangnya 4 angka.',
+              icon: 'error',
+              confirmButtonColor: '#ef4444',
+              customClass: { popup: 'rounded-3xl' }
+            });
+            return;
+          }
+
+          // 3. Sahkan PIN baharu sepadan
+          if (this.pinForm.new !== this.pinForm.confirm) {
+            Swal.fire({
+              title: 'PIN Tidak Sepadan!',
+              text: 'Pengesahan PIN baharu anda tidak sepadan. Sila taip semula.',
+              icon: 'error',
+              confirmButtonColor: '#ef4444',
+              customClass: { popup: 'rounded-3xl' }
+            });
+            return;
+          }
+
+          // 4. Proses simpan PIN baharu ke Local Storage
+          this.adminPin = this.pinForm.new;
+          localStorage.setItem('bt_pahat_admin_pin', this.adminPin);
+
+          // Kosongkan form kemas kini PIN
+          this.pinForm.old = '';
+          this.pinForm.new = '';
+          this.pinForm.confirm = '';
+
+          Swal.fire({
+            title: 'PIN Berjaya Diubah!',
+            text: 'Mulai sekarang, anda wajib menggunakan PIN Keselamatan baharu ini untuk melog masuk ke Portal Urus Setia.',
+            icon: 'success',
+            confirmButtonColor: '#10b981',
             customClass: { popup: 'rounded-3xl' }
           });
         },

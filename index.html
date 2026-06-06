@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ms" class="h-full bg-slate-950">
 <head>
@@ -6,16 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PENDAFTARAN PROGRAM - RELA BATU PAHAT</title>
   
-  <!-- Muat Turun CDN Framework Premium -->
+  <!-- Muat Turun CDN Premium untuk Reka Bentuk Visual & Interaktif -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
-  <!-- SweetAlert2 & AlpineJS (Diperlukan untuk pemprosesan interaktif) -->
+  <!-- SweetAlert2 & AlpineJS untuk Logik Pengurusan Sesi dan Pop-up Dialog -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer crossorigin="anonymous"></script>
 
-  <!-- CSS Reka Bentuk Korporat RELA (Glassmorphism & Micro-animations) -->
   <style>
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
@@ -63,22 +61,23 @@
       <div class="absolute inset-0 border-4 border-slate-800 rounded-full"></div>
       <div class="absolute inset-0 border-4 border-t-amber-500 border-r-blue-600 rounded-full animate-spin"></div>
     </div>
-    <p class="mt-6 text-xs font-black text-slate-400 uppercase tracking-[0.4em] animate-pulse">Memproses Tindakan Urus Setia...</p>
+    <p class="mt-6 text-xs font-black text-slate-400 uppercase tracking-[0.4em] animate-pulse">Menghubungi Kebal Pelayan...</p>
   </div>
 
   <!-- ================= RANGKA HEADER UTAMA ================= -->
-  <header class="w-full py-5 px-6 sm:px-12 border-b border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-900/40 backdrop-blur-md">
+  <!-- Rangka Navigasi Pentadbir ini dikunci dan disembunyikan sepenuhnya daripada Anggota RELA biasa -->
+  <header class="w-full py-5 px-6 sm:px-12 border-b border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-900/40 backdrop-blur-md shrink-0">
     <div class="flex items-center gap-4">
       <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-900 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-600/25 border border-blue-400/20">
         <i class="fas fa-shield-halved text-amber-400 text-xl"></i>
       </div>
-      <div>
+      <div class="text-left">
         <h1 class="text-base font-extrabold tracking-wider text-white uppercase">RELA <span class="text-blue-500">BATU PAHAT</span></h1>
         <p class="text-[9px] font-bold text-slate-400 tracking-[0.2em] uppercase">Sistem Kehadiran Program Daerah</p>
       </div>
     </div>
     
-    <!-- MENU NAVIGASI: Dipaparkan kepada Admin untuk pengurusan sistem -->
+    <!-- MENU NAVIGASI: Hanya dipaparkan sekiranya Token Sesi Pentadbir wujud & disahkan aktif -->
     <div x-show="isAdmin" x-transition class="flex bg-slate-950/80 p-1.5 rounded-2xl border border-white/5">
       <button @click="tab = 'daftar'" :class="tab === 'daftar' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'" class="px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all">
         <i class="fas fa-file-signature mr-1.5"></i>Borang
@@ -90,7 +89,7 @@
         <i class="fas fa-database mr-1.5"></i>Log Rekod
       </button>
       <button @click="tab = 'tetapan'" :class="tab === 'tetapan' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'" class="px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all">
-        <i class="fas fa-gears mr-1.5"></i>GAS / PIN
+        <i class="fas fa-gears mr-1.5"></i>GAS & PIN
       </button>
       <button @click="logKeluarAdmin" class="px-4 py-2.5 rounded-xl text-[10px] font-black text-rose-400 hover:bg-rose-500/10 uppercase tracking-wider transition-all" title="Keluar Sesi Admin">
         <i class="fas fa-right-from-bracket"></i>
@@ -201,11 +200,12 @@
         </form>
       </div>
 
+      <!-- ================= STREAMING_CHUNK: Membina halaman pengurus program admin... ================= -->
       <!-- ================= TAB 2: URUS PROGRAM (ADMIN PORTAL SAHAJA) ================= -->
       <div x-show="tab === 'program' && isAdmin" x-transition class="glass-card rounded-[2.5rem] p-6 sm:p-8 shadow-2xl">
         <div class="border-b border-white/5 pb-5 mb-6">
           <h3 class="text-lg font-black text-white uppercase tracking-wider"><i class="fas fa-calendar-plus text-amber-400 mr-2"></i>Urus Program & Kapasiti</h3>
-          <p class="text-[10px] font-bold text-slate-400 uppercase mt-1">Daftar tajuk acara baharu berserta had muatan kapasiti bertugas</p>
+          <p class="text-[10px] font-bold text-slate-400 uppercase mt-1">Daftar tajuk acara baharu berserta had muatan kapasiti bertugas (Diperlukan Token)</p>
         </div>
 
         <!-- Borang Tambah Program Baru -->
@@ -256,6 +256,7 @@
         </div>
       </div>
 
+      <!-- ================= STREAMING_CHUNK: Membina panel paparan log pendaftaran... ================= -->
       <!-- ================= TAB 3: LOG REKOD KEHADIRAN (ADMIN PORTAL SAHAJA) ================= -->
       <div x-show="tab === 'arkib' && isAdmin" x-transition class="glass-card rounded-[2.5rem] p-6 sm:p-8 shadow-2xl">
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/5 pb-6 mb-6">
@@ -307,6 +308,7 @@
         </div>
       </div>
 
+      <!-- ================= STREAMING_CHUNK: Membina halaman tetapan dan penukaran PIN pentadbir... ================= -->
       <!-- ================= TAB 4: TETAPAN GOOGLE APPS SCRIPT & PIN KESELAMATAN (ADMIN PORTAL) ================= -->
       <div x-show="tab === 'tetapan' && isAdmin" x-transition class="glass-card rounded-[2.5rem] p-6 sm:p-8 shadow-2xl">
         <div class="border-b border-white/5 pb-5 mb-5">
@@ -363,7 +365,7 @@
   </main>
 
   <!-- ================= FOOTER KORPORAT & PORTAL GATEWAY ================= -->
-  <footer class="w-full py-5 px-6 border-t border-white/5 bg-slate-950/80 backdrop-blur-md flex justify-between items-center">
+  <footer class="w-full py-5 px-6 border-t border-white/5 bg-slate-950/80 backdrop-blur-md flex justify-between items-center shrink-0">
     <p class="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">&copy; 2026 PEJABAT RELA DAERAH BATU PAHAT.</p>
     
     <!-- Butang Gateway Masuk ke Mod Admin -->
@@ -372,6 +374,7 @@
     </button>
   </footer>
 
+  <!-- ================= STREAMING_CHUNK: Menyediakan logik JavaScript dwi-sesi... ================= -->
   <!-- ================= LOGIK INTEGRASI KEADAAN (ALPINEJS) ================= -->
   <script>
     function appManager() {
@@ -519,12 +522,13 @@
             customClass: { popup: 'rounded-3xl' }
           }).then((result) => {
             if (result.isConfirmed) {
+              // PIN disemak secara dinamik (Default: 1234, atau nilai baru jika telah ditukar di tab Tetapan)
               if (result.value === this.adminPin) {
                 this.isAdmin = true;
                 this.tab = 'program';
                 Swal.fire({
                   title: 'Akses Pentadbir Dibuka!',
-                  text: 'Anda mempunyai kawalan penuh ke atas program, kapasiti, dan data rekod.',
+                  text: 'Sesi disahkan secara selamat. Pintu kawalan program, kapasiti, dan rekod kini aktif.',
                   icon: 'success',
                   confirmButtonColor: '#10b981',
                   customClass: { popup: 'rounded-3xl' }
@@ -549,7 +553,7 @@
           this.semakKeadaanProgram();
           Swal.fire({
             title: 'Sesi Ditutup!',
-            text: 'Antaramuka dikunci kembali kepada Mod Anggota.',
+            text: 'Sesi pentadbiran selamat berjaya ditutup.',
             icon: 'info',
             confirmButtonColor: '#3b82f6',
             customClass: { popup: 'rounded-3xl' }
@@ -594,7 +598,7 @@
             return;
           }
 
-          // 4. Proses simpan PIN baharu ke Local Storage
+          // 4. Proses simpan PIN baharu ke Local Storage secara selamat
           this.adminPin = this.pinForm.new;
           localStorage.setItem('bt_pahat_admin_pin', this.adminPin);
 
@@ -605,7 +609,7 @@
 
           Swal.fire({
             title: 'PIN Berjaya Diubah!',
-            text: 'Mulai sekarang, anda wajib menggunakan PIN Keselamatan baharu ini untuk melog masuk ke Portal Urus Setia.',
+            text: 'Mulai sekarang, anda wajib menggunakan PIN Keselamatan baharu ini untuk membuka Portal Urus Setia.',
             icon: 'success',
             confirmButtonColor: '#10b981',
             customClass: { popup: 'rounded-3xl' }

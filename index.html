@@ -14,6 +14,7 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer crossorigin="anonymous"></script>
 
+  <!-- CSS Reka Bentuk Korporat Premium (Glassmorphism UI) -->
   <style>
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
@@ -61,11 +62,10 @@
       <div class="absolute inset-0 border-4 border-slate-800 rounded-full"></div>
       <div class="absolute inset-0 border-4 border-t-amber-500 border-r-blue-600 rounded-full animate-spin"></div>
     </div>
-    <p class="mt-6 text-xs font-black text-slate-400 uppercase tracking-[0.4em] animate-pulse">Menghubungi Kebal Pelayan...</p>
+    <p class="mt-6 text-xs font-black text-slate-400 uppercase tracking-[0.4em] animate-pulse" x-text="loadingMsg"></p>
   </div>
 
   <!-- ================= RANGKA HEADER UTAMA ================= -->
-  <!-- Rangka Navigasi Pentadbir ini dikunci dan disembunyikan sepenuhnya daripada Anggota RELA biasa -->
   <header class="w-full py-5 px-6 sm:px-12 border-b border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-900/40 backdrop-blur-md shrink-0">
     <div class="flex items-center gap-4">
       <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-900 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-600/25 border border-blue-400/20">
@@ -101,9 +101,29 @@
   <main class="flex-1 overflow-y-auto p-4 sm:p-10 flex items-center justify-center">
     <div class="w-full max-w-2xl">
 
-      <!-- ================= TAB 1: BORANG PENDAFTARAN ANGGOTA ================= -->
-      <!-- Ini sahaja yang dipaparkan secara lalai untuk anggota mengisi -->
-      <div x-show="tab === 'daftar'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" class="glass-card rounded-[2.5rem] p-6 sm:p-10 relative overflow-hidden">
+      <!-- ================= JALUR KESELAMATAN: BANNER PERINGATAN URL GAS BELUM DISUBMIT ================= -->
+      <div x-show="!gasUrl" x-transition class="glass-card rounded-[2.5rem] p-8 text-center space-y-6 relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-red-500 to-amber-500"></div>
+        <div class="w-20 h-20 bg-rose-500/10 text-rose-400 rounded-3xl flex items-center justify-center mx-auto text-3xl border border-rose-500/20">
+          <i class="fas fa-triangle-exclamation"></i>
+        </div>
+        <div>
+          <h2 class="text-xl font-extrabold text-white uppercase tracking-wide">Pautan Pelayan Belum Ditetapkan</h2>
+          <p class="text-xs text-slate-400 mt-2 leading-relaxed">
+            Sistem ini memerlukan penyambungan pangkalan data awan aktif ke Google Spreadsheet Pejabat RELA Daerah Batu Pahat sebelum pendaftaran dibuka kepada anggota.
+          </p>
+        </div>
+        <div class="p-5 bg-slate-900/60 rounded-2xl border border-white/5 space-y-4">
+          <label class="block text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Masukkan Google Web App URL Anda</label>
+          <input type="url" x-model="tempGasUrl" placeholder="https://script.google.com/macros/s/.../exec" class="w-full px-5 py-4 glass-input rounded-2xl text-xs font-mono text-white placeholder:text-slate-700 outline-none text-center">
+          <button @click="konfigurasiAwalGas()" class="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all">
+            Hubungkan Pangkalan Data
+          </button>
+        </div>
+      </div>
+
+      <!-- ================= TAB 1: BORANG PENDAFTARAN ANGGOTA (DIPAPARKAN APABILA GAS URL AKTIF) ================= -->
+      <div x-show="tab === 'daftar' && gasUrl" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" class="glass-card rounded-[2.5rem] p-6 sm:p-10 relative overflow-hidden">
         <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-600 via-indigo-500 to-amber-500"></div>
         
         <div class="text-center mb-8">
@@ -133,7 +153,7 @@
             <!-- ================= SISTEM INDIKATOR BUTIRAN & KAPASITI ANGGOTA (LIVE COUNT + TARIKH MASA + LOKASI GOOGLE MAPS) ================= -->
             <div x-show="form.program" x-transition class="mt-4 p-5 bg-slate-900/80 rounded-2xl border border-white/5 space-y-4">
               
-              <!-- Bahagian Paparan Tarikh & Masa Program -->
+              <!-- Bahapar Paparan Tarikh & Masa Program -->
               <div class="grid grid-cols-2 gap-4 border-b border-white/5 pb-4">
                 <div class="flex items-center gap-3">
                   <div class="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400">
@@ -167,7 +187,7 @@
                   </div>
                 </div>
                 
-                <!-- Butang Pandu ke Google Maps Pintar -->
+                <!-- Butang Pandu ke Google Maps -->
                 <a :href="'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(currentLocation)" 
                    target="_blank" 
                    class="px-3.5 py-2 bg-blue-600/15 hover:bg-blue-600 border border-blue-500/20 hover:border-blue-500 text-blue-400 hover:text-white rounded-xl text-[9px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all shrink-0">
@@ -198,7 +218,7 @@
               </div>
             </div>
 
-            <p x-show="programList.length === 0" class="text-[9px] text-rose-400 font-bold uppercase mt-2 ml-2">Sila hubungi urus setia untuk mengaktifkan jadual program.</p>
+            <p x-show="programList.length === 0" class="text-[9px] text-rose-400 font-bold uppercase mt-2 ml-2">Tiada program aktif dikesan di pelayan spreadsheet.</p>
           </div>
 
           <!-- Nama Penuh -->
@@ -254,7 +274,7 @@
         </div>
 
         <!-- Borang Tambah Program Baru -->
-        <form @submit.prevent="tambahProgramSesi" class="space-y-4 mb-6">
+        <form @submit.prevent="tambahProgramAwan" class="space-y-4 mb-6">
           <div class="grid grid-cols-1 gap-4">
             
             <div class="grid sm:grid-cols-2 gap-4">
@@ -316,12 +336,10 @@
               
               <!-- Butang Tindakan (Edit & Padam) -->
               <div class="flex items-center gap-2 shrink-0">
-                <!-- Butang Edit Baru -->
                 <button @click="bukaEditProgram(p, index)" class="w-8 h-8 rounded-lg bg-blue-500/15 hover:bg-blue-500 text-blue-400 hover:text-white flex items-center justify-center transition-all" title="Ubah Maklumat Program">
                   <i class="fas fa-pen-to-square text-[10px]"></i>
                 </button>
-                <!-- Butang Padam -->
-                <button @click="padamProgramSesi(p.name)" class="w-8 h-8 rounded-lg bg-rose-500/15 hover:bg-rose-500 text-rose-400 hover:text-white flex items-center justify-center transition-all" title="Hapus Program">
+                <button @click="padamProgramAwan(p.name)" class="w-8 h-8 rounded-lg bg-rose-500/15 hover:bg-rose-500 text-rose-400 hover:text-white flex items-center justify-center transition-all" title="Hapus Program">
                   <i class="fas fa-trash text-[10px]"></i>
                 </button>
               </div>
@@ -329,25 +347,24 @@
           </template>
           
           <div x-show="programList.length === 0" class="text-center p-8 bg-slate-950/40 rounded-2xl border border-dashed border-white/10">
-            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">TIADA PROGRAM AKTIF DIKUNCI. SILA TAMBAH DI ATAS.</p>
+            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">TIADA PROGRAM AKTIF DI SPREADSHEET.</p>
           </div>
         </div>
 
-        <!-- ================================================================================= -->
-        <!-- ================= MODAL EDIT MAKLUMAT PROGRAM (GLASSMORPHISM COVE) ================= -->
-        <!-- ================================================================================= -->
-        <div x-show="editModal.open" class="absolute inset-0 z-50 bg-slate-950/90 backdrop-blur-md rounded-[2.5rem] p-6 sm:p-10 flex flex-col justify-center" x-transition>
+        <!-- ================= MODAL EDIT MAKLUMAT PROGRAM ================= -->
+        <div x-show="editModal.open" class="absolute inset-0 z-50 bg-slate-950/95 backdrop-blur-md rounded-[2.5rem] p-6 sm:p-10 flex flex-col justify-center" x-transition>
           <div class="border-b border-white/5 pb-4 mb-5">
             <h3 class="text-base font-black text-amber-400 uppercase tracking-wider"><i class="fas fa-pen-to-square mr-2"></i>Kemaskini Maklumat Program</h3>
             <p class="text-[9px] font-bold text-slate-400 uppercase mt-1">Ubah suai sebarang butiran program dan had kapasiti secara dinamik</p>
           </div>
 
-          <form @submit.prevent="simpanEditProgram" class="space-y-4">
+          <form @submit.prevent="simpanEditProgramAwan" class="space-y-4">
             <div class="space-y-4">
               <!-- Tajuk Program -->
               <div>
                 <label class="block text-[9px] font-black uppercase text-slate-400 tracking-wider mb-1.5 ml-1">Tajuk Program</label>
-                <input type="text" x-model="editModal.name" @input="editModal.name = $event.target.value.toUpperCase()" required class="w-full px-5 py-3.5 glass-input rounded-2xl text-xs font-black text-white outline-none uppercase">
+                <input type="text" x-model="editModal.name" @input="editModal.name = $event.target.value.toUpperCase()" required class="w-full px-5 py-3.5 glass-input rounded-2xl text-xs font-black text-white outline-none uppercase" disabled>
+                <p class="text-[8px] text-slate-500 mt-1">Nota: Nama program tidak boleh diubah untuk memelihara integriti data.</p>
               </div>
               <!-- Lokasi Program -->
               <div>
@@ -378,7 +395,7 @@
               <button type="button" @click="editModal.open = false" class="w-full py-4 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all">
                 Batal
               </button>
-              <button type="submit" class="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-500 hover:to-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-blue-500/20">
+              <button type="submit" class="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-500 hover:to-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg">
                 Simpan Perubahan
               </button>
             </div>
@@ -394,7 +411,7 @@
             <p class="text-[10px] font-bold text-slate-400 uppercase mt-1">Jejak pendaftaran masa nyata anggota RELA Batu Pahat</p>
           </div>
           
-          <button @click="padamSesi" class="px-4 py-2.5 bg-rose-500/10 border border-rose-500/20 hover:bg-rose-500 text-rose-400 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all">
+          <button @click="padamSemuaLogAwan" class="px-4 py-2.5 bg-rose-500/10 border border-rose-500/20 hover:bg-rose-500 text-rose-400 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all">
             <i class="fas fa-trash-can mr-2"></i>Kosongkan Rekod
           </button>
         </div>
@@ -441,7 +458,7 @@
       <div x-show="tab === 'tetapan' && isAdmin" x-transition class="glass-card rounded-[2.5rem] p-6 sm:p-8 shadow-2xl">
         <div class="border-b border-white/5 pb-5 mb-5">
           <h3 class="text-lg font-black text-white uppercase tracking-wider"><i class="fas fa-network-wired text-indigo-400 mr-2"></i>Penyambungan GAS & Profil</h3>
-          <p class="text-[10px] font-bold text-slate-400 uppercase mt-1">Selaraskan pangkalan data daerah dan tukar PIN keselamatan pintu masuk</p>
+          <p class="text-[10px] font-bold text-slate-400 uppercase mt-1">Urus pautan Spreadsheet dan tukar PIN keselamatan pintu masuk</p>
         </div>
 
         <div class="space-y-5">
@@ -452,8 +469,8 @@
           </div>
 
           <div class="flex items-center gap-3 p-4 bg-slate-900/60 rounded-xl border border-white/5">
-            <div class="w-2.5 h-2.5 rounded-full" :class="gasUrl ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'"></div>
-            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest" x-text="gasUrl ? 'STATUS: SISTEM DISAMBUNGKAN KE SPREADSHEET' : 'STATUS: MOD SIMULASI TEMPATAN (LOCAL STORAGE DIBUKA)'"></p>
+            <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
+            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">STATUS: SISTEM DISAMBUNGKAN KE SPREADSHEET KORPORAT</p>
           </div>
 
           <!-- ================= BORANG TUKAR PASSWORD/PIN KESELAMATAN PENTADBIR ================= -->
@@ -461,9 +478,9 @@
             <h4 class="text-xs font-black text-amber-400 uppercase tracking-widest flex items-center gap-2">
               <i class="fas fa-key"></i> Kemas Kini PIN Keselamatan Admin
             </h4>
-            <p class="text-[9px] font-bold text-slate-400 uppercase">PIN ini digunakan di bahagian footer halaman untuk membuka panel tadbiran urus setia.</p>
+            <p class="text-[9px] font-bold text-slate-400 uppercase">PIN ini disimpan dan disahkan terus melalui pangkalan data awan Google.</p>
 
-            <form @submit.prevent="tukarPinAdmin" class="space-y-4">
+            <form @submit.prevent="tukarPinAwan" class="space-y-4">
               <div class="grid sm:grid-cols-3 gap-4">
                 <!-- PIN Semasa -->
                 <div>
@@ -508,8 +525,10 @@
       return {
         tab: 'daftar',
         loading: false,
+        loadingMsg: 'Menghubungi Kebal Pelayan...',
         isAdmin: false,
         gasUrl: '',
+        tempGasUrl: '',
         carian: '',
         
         // Form Input Program Baru Admin
@@ -539,7 +558,6 @@
         },
 
         // Sistem Kredential Admin
-        adminPin: '1234',
         pinForm: {
           old: '',
           new: '',
@@ -557,58 +575,72 @@
         senaraiRekod: [],
 
         init() {
-          // 1. Muatkan URL Apps Script jika wujud
+          // Muatkan URL Apps Script yang telah disimpan secara kekal
           const simpananUrl = localStorage.getItem('bt_pahat_gas_url');
-          if (simpananUrl) this.gasUrl = simpananUrl;
-
-          // 2. Muatkan PIN Keselamatan Pentadbir (Default: 1234 jika tiada)
-          const simpananPin = localStorage.getItem('bt_pahat_admin_pin');
-          if (simpananPin) this.adminPin = simpananPin;
-
-          // 3. Muatkan senarai Kehadiran Log
-          const logTempatan = localStorage.getItem('bt_pahat_log_kehadiran');
-          if (logTempatan) {
-            this.senaraiRekod = JSON.parse(logTempatan);
-          } else {
-            // Data sampel
-            this.senaraiRekod = [
-              { program: 'PERBARISAN BULANAN ANGGOTA RELA DAERAH', nama: 'AHMAD BIN SULAIMAN', kp: '940112015533', tel: '0127766541', timestamp: '06/06/2026, 09:12:00 AM' }
-            ];
-            localStorage.setItem('bt_pahat_log_kehadiran', JSON.stringify(this.senaraiRekod));
-          }
-
-          // 4. Muatkan senarai Program Aktif
-          const progDaftar = localStorage.getItem('bt_pahat_program_list');
-          if (progDaftar) {
-            try {
-              const parsed = JSON.parse(progDaftar);
-              this.programList = parsed.map(p => {
-                if (typeof p === 'string') {
-                  return { name: p, capacity: 50, date: '2026-06-15', time: '08:00', location: 'PEJABAT RELA DAERAH BATU PAHAT' };
-                }
-                return {
-                  name: p.name,
-                  capacity: p.capacity || 50,
-                  date: p.date || '2026-06-15',
-                  time: p.time || '08:00',
-                  location: p.location || 'PEJABAT RELA DAERAH BATU PAHAT'
-                };
-              });
-            } catch (e) {
-              this.binaProgramLalai();
-            }
-          } else {
-            this.binaProgramLalai();
+          if (simpananUrl) {
+            this.gasUrl = simpananUrl;
+            this.tempGasUrl = simpananUrl;
+            this.muatTurunDataAwan();
           }
         },
 
-        binaProgramLalai() {
-          this.programList = [
-            { name: "PERBARISAN BULANAN ANGGOTA RELA DAERAH", capacity: 50, date: '2026-06-15', time: '08:00', location: 'PEJABAT RELA DAERAH BATU PAHAT' },
-            { name: "LATIHAN MENEMBAK TAHUNAN RELA DAERAH BATU PAHAT", capacity: 10, date: '2026-06-20', time: '09:00', location: 'LAPANG SASAR PARIT SULONG, BATU PAHAT' },
-            { name: "PROGRAM KHIDMAT KOMUNITI & KESELAMATAN DAERAH", capacity: 30, date: '2026-06-25', time: '14:30', location: 'DEWAN ORANG RAMAI PARIT RAJA, BATU PAHAT' }
-          ];
-          localStorage.setItem('bt_pahat_program_list', JSON.stringify(this.programList));
+        // MEMUAT NAIK DATA SECARA REAL-TIME DARI PELAYAN SPREADSHEET GAS
+        muatTurunDataAwan() {
+          if (!this.gasUrl) return;
+          this.loading = true;
+          this.loadingMsg = 'Memuat turun program aktif...';
+          
+          fetch(`${this.gasUrl}?action=getAppData`)
+            .then(res => res.json())
+            .then(data => {
+              this.loading = false;
+              if (data.success) {
+                this.programList = data.programs || [];
+                this.senaraiRekod = data.records || [];
+                
+                // Segarkan semula status jika ada program sedang dipilih
+                if (this.form.program) {
+                  this.semakKeadaanProgram();
+                }
+              } else {
+                Swal.fire({
+                  title: 'Ralat Spreadsheet!',
+                  text: data.msg || 'Gagal menyegerakkan data dari Google Sheets.',
+                  icon: 'error',
+                  confirmButtonColor: '#ef4444'
+                });
+              }
+            })
+            .catch(err => {
+              this.loading = false;
+              Swal.fire({
+                title: 'Kegagalan Rangkaian!',
+                text: 'Sistem tidak dapat menghubungi pelayan GAS. Sila pastikan Web App anda aktif dan "Who has access: Anyone".',
+                icon: 'error',
+                confirmButtonColor: '#ef4444'
+              });
+            });
+        },
+
+        // Konfigurasi Pautan GAS Kali Pertama
+        konfigurasiAwalGas() {
+          const urlStr = this.tempGasUrl.trim();
+          if (!urlStr.startsWith('https://script.google.com/')) {
+            Swal.fire({ title: 'Format Tidak Sah!', text: 'Sila masukkan pautan Web App Google Apps Script yang betul.', icon: 'warning', confirmButtonColor: '#f59e0b' });
+            return;
+          }
+          this.gasUrl = urlStr;
+          localStorage.setItem('bt_pahat_gas_url', urlStr);
+          this.muatTurunDataAwan();
+        },
+
+        // Simpan Url GAS Baru Dalam Tetapan
+        simpanGasUrl() {
+          const urlStr = this.gasUrl.trim();
+          if (!urlStr) return;
+          localStorage.setItem('bt_pahat_gas_url', urlStr);
+          this.muatTurunDataAwan();
+          Swal.fire({ title: 'Tetapan Dikunci!', text: 'Pautan pelayan baharu telah dikemas kini.', icon: 'success', confirmButtonColor: '#3b82f6' });
         },
 
         // Helper memformat tarikh YYYY-MM-DD ke DD/MM/YYYY
@@ -658,7 +690,7 @@
             if (!a.isPast && !b.isPast) {
               return a.dateTimeObj - b.dateTimeObj; // Acara terdekat di atas
             }
-            return b.dateTimeObj - a.dateTimeObj; // Acara terlepas baru di atas
+            return b.dateTimeObj - a.dateTimeObj; // Acara terlepas baru di bawah
           });
         },
 
@@ -699,8 +731,7 @@
                 title: 'Program Tamat!',
                 text: 'Maaf, pendaftaran program ini telah ditutup kerana acara bertugas telah terlepas tarikh.',
                 icon: 'error',
-                confirmButtonColor: '#ef4444',
-                customClass: { popup: 'rounded-3xl' }
+                confirmButtonColor: '#ef4444'
               });
               this.semakKeadaanProgram();
               return;
@@ -713,11 +744,124 @@
                 title: 'Program Had Penuh!',
                 text: 'Maaf, kuota anggota bagi tugasan ini telah mencapai had maksimum. Sila pilih tugasan program lain.',
                 icon: 'warning',
-                confirmButtonColor: '#ef4444',
-                customClass: { popup: 'rounded-3xl' }
+                confirmButtonColor: '#ef4444'
               });
             }
           }
+        },
+
+        // Buka Portal Urus Setia
+        bukaAdminVault() {
+          if (!this.gasUrl) {
+            Swal.fire({ title: 'Gagal!', text: 'Sila masukkan pautan pelayan GAS terlebih dahulu.', icon: 'warning', confirmButtonColor: '#f59e0b' });
+            return;
+          }
+          
+          if (this.isAdmin) {
+            this.tab = 'program';
+            return;
+          }
+
+          Swal.fire({
+            title: 'Portal Urus Setia',
+            text: 'Sila masukkan PIN Keselamatan Pentadbir:',
+            input: 'password',
+            inputPlaceholder: 'PIN KESELAMATAN',
+            inputAttributes: { maxlength: '20' },
+            showCancelButton: true,
+            confirmButtonColor: '#3b82f6',
+            cancelButtonColor: '#475569',
+            confirmButtonText: 'Buka Sesi',
+            cancelButtonText: 'Batal'
+          }).then((result) => {
+            if (result.isConfirmed) {
+              const enteredPin = result.value;
+              this.loading = true;
+              this.loadingMsg = 'Mengesahkan PIN Keselamatan...';
+
+              // Sahkan PIN dengan pelayan secara selamat
+              fetch(`${this.gasUrl}?action=verifyPin&pin=${encodeURIComponent(enteredPin)}`)
+                .then(res => res.json())
+                .then(data => {
+                  this.loading = false;
+                  if (data.success) {
+                    this.isAdmin = true;
+                    this.tab = 'program';
+                    // Simpan kunci penyulitan sesi dalam memori jangka pendek
+                    sessionStorage.setItem('rela_session_pin', enteredPin);
+                    Swal.fire({
+                      title: 'Akses Pentadbir Dibuka!',
+                      text: 'Identiti disahkan. Urusan program dan log kehadiran diaktifkan.',
+                      icon: 'success',
+                      confirmButtonColor: '#10b981'
+                    });
+                  } else {
+                    Swal.fire({ title: 'Akses Ditolak!', text: data.msg || 'PIN salah.', icon: 'error', confirmButtonColor: '#ef4444' });
+                  }
+                })
+                .catch(() => {
+                  this.loading = false;
+                  Swal.fire({ title: 'Ralat Rangkaian!', text: 'Tidak dapat menghubungi pelayan untuk pengesahan.', icon: 'error' });
+                });
+            }
+          });
+        },
+
+        logKeluarAdmin() {
+          this.isAdmin = false;
+          this.tab = 'daftar';
+          this.form.program = '';
+          sessionStorage.removeItem('rela_session_pin');
+          this.semakKeadaanProgram();
+          Swal.fire({ title: 'Sesi Ditutup!', text: 'Mod pentadbiran selamat berjaya ditutup.', icon: 'info', confirmButtonColor: '#3b82f6' });
+        },
+
+        // PROSES AWAN: Tambah Program Baru ke Google Sheets
+        tambahProgramAwan() {
+          const tajukBaru = this.baruProgramInput.trim().toUpperCase();
+          const capBaru = parseInt(this.baruProgramCapacity);
+          const tarikhBaru = this.baruProgramDate;
+          const masaBaru = this.baruProgramTime;
+          const lokasiBaru = this.baruProgramLocation.trim().toUpperCase();
+
+          if (!tajukBaru || isNaN(capBaru) || capBaru < 1 || !tarikhBaru || !masaBaru || !lokasiBaru) {
+            Swal.fire({ title: 'Input Tidak Lengkap!', text: 'Sila pastikan semua butiran diisi.', icon: 'error', confirmButtonColor: '#ef4444' });
+            return;
+          }
+
+          const pin = sessionStorage.getItem('rela_session_pin');
+          this.loading = true;
+          this.loadingMsg = 'Menyimpan program ke Google Sheets...';
+
+          const formData = new FormData();
+          formData.append('action', 'addProgram');
+          formData.append('pin', pin);
+          formData.append('name', tajukBaru);
+          formData.append('capacity', capBaru);
+          formData.append('date', tarikhBaru);
+          formData.append('time', masaBaru);
+          formData.append('location', lokasiBaru);
+
+          fetch(this.gasUrl, { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(data => {
+              this.loading = false;
+              if (data.success) {
+                Swal.fire({ title: 'Program Ditambah!', text: 'Butiran program baharu telah disimpan dalam Google Sheets.', icon: 'success', confirmButtonColor: '#10b981' });
+                this.baruProgramInput = '';
+                this.baruProgramCapacity = 50;
+                this.baruProgramDate = '';
+                this.baruProgramTime = '';
+                this.baruProgramLocation = '';
+                this.muatTurunDataAwan();
+              } else {
+                Swal.fire({ title: 'Gagal!', text: data.msg || 'Ralat menyimpan data.', icon: 'error' });
+              }
+            })
+            .catch(() => {
+              this.loading = false;
+              Swal.fire({ title: 'Ralat!', text: 'Gagal berkomunikasi dengan pelayan.', icon: 'error' });
+            });
         },
 
         // PINTU KAWALAN: Buka Borang Edit Program
@@ -731,246 +875,169 @@
           this.editModal.open = true;
         },
 
-        // PROSES: Simpan Perubahan Maklumat Program Yang Diedit
-        simpanEditProgram() {
-          const idx = this.editModal.index;
-          if (idx === null || idx === undefined) return;
-
-          const updatedName = this.editModal.name.trim().toUpperCase();
+        // PROSES AWAN: Simpan Perubahan Maklumat Program Yang Diedit ke Google Sheets
+        simpanEditProgramAwan() {
           const updatedLocation = this.editModal.location.trim().toUpperCase();
           const updatedCapacity = parseInt(this.editModal.capacity);
 
-          if (!updatedName || !updatedLocation || isNaN(updatedCapacity) || updatedCapacity < 1 || !this.editModal.date || !this.editModal.time) {
-            Swal.fire({ title: 'Ralat!', text: 'Sila lengkapkan semua butiran program.', icon: 'error', confirmButtonColor: '#ef4444' });
+          if (!updatedLocation || isNaN(updatedCapacity) || updatedCapacity < 1 || !this.editModal.date || !this.editModal.time) {
+            Swal.fire({ title: 'Ralat!', text: 'Sila lengkapkan semua butiran.', icon: 'error' });
             return;
           }
 
-          // Simpan objek kemas kini
-          this.programList[idx] = {
-            name: updatedName,
-            capacity: updatedCapacity,
-            date: this.editModal.date,
-            time: this.editModal.time,
-            location: updatedLocation
-          };
+          const pin = sessionStorage.getItem('rela_session_pin');
+          this.loading = true;
+          this.loadingMsg = 'Mengemas kini pangkalan data awan...';
 
-          localStorage.setItem('bt_pahat_program_list', JSON.stringify(this.programList));
-          this.editModal.open = false;
+          const formData = new FormData();
+          formData.append('action', 'editProgram');
+          formData.append('pin', pin);
+          formData.append('name', this.editModal.name);
+          formData.append('capacity', updatedCapacity);
+          formData.append('date', this.editModal.date);
+          formData.append('time', this.editModal.time);
+          formData.append('location', updatedLocation);
 
-          Swal.fire({
-            title: 'Program Berjaya Diubah!',
-            text: 'Butiran penugasan program telah berjaya diperbaharui.',
-            icon: 'success',
-            confirmButtonColor: '#10b981',
-            customClass: { popup: 'rounded-3xl' }
-          });
-
-          // Segarkan semula status visual jika sedang aktif dipilih di borang depan
-          if (this.form.program) {
-            this.semakKeadaanProgram();
-          }
-        },
-
-        // Pintu Keselamatan PIN Portal (Menggunakan PIN dinamik daripada local storage)
-        bukaAdminVault() {
-          if (this.isAdmin) {
-            Swal.fire({
-              title: 'Sesi Pentadbir Aktif!',
-              text: 'Sesi kawalan pentadbir sedia terbuka.',
-              icon: 'info',
-              confirmButtonColor: '#3b82f6',
-              customClass: { popup: 'rounded-3xl' }
-            });
-            return;
-          }
-
-          Swal.fire({
-            title: 'Portal Urus Setia',
-            text: 'Sila masukkan PIN Keselamatan Pentadbir:',
-            input: 'password',
-            inputPlaceholder: 'PIN KESELAMATAN',
-            inputAttributes: {
-              maxlength: '20',
-              autocapitalize: 'off',
-              autocorrect: 'off'
-            },
-            showCancelButton: true,
-            confirmButtonColor: '#3b82f6',
-            cancelButtonColor: '#475569',
-            confirmButtonText: 'Buka Sesi',
-            cancelButtonText: 'Batal',
-            customClass: { popup: 'rounded-3xl' }
-          }).then((result) => {
-            if (result.isConfirmed) {
-              if (result.value === this.adminPin) {
-                this.isAdmin = true;
-                this.tab = 'program';
-                Swal.fire({
-                  title: 'Akses Pentadbir Dibuka!',
-                  text: 'Sesi disahkan secara selamat. Pintu kawalan program, kapasiti, dan rekod kini aktif.',
-                  icon: 'success',
-                  confirmButtonColor: '#10b981',
-                  customClass: { popup: 'rounded-3xl' }
-                });
+          fetch(this.gasUrl, { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(data => {
+              this.loading = false;
+              if (data.success) {
+                Swal.fire({ title: 'Kemas Kini Berjaya!', text: 'Maklumat program telah dikemas kini pada pelayan.', icon: 'success', confirmButtonColor: '#10b981' });
+                this.editModal.open = false;
+                this.muatTurunDataAwan();
               } else {
-                Swal.fire({
-                  title: 'PIN Tidak Sah!',
-                  text: 'Akses pintu keselamatan ditolak.',
-                  icon: 'error',
-                  confirmButtonColor: '#ef4444',
-                  customClass: { popup: 'rounded-3xl' }
-                });
+                Swal.fire({ title: 'Ralat!', text: data.msg || 'Gagal mengemas kini.', icon: 'error' });
               }
-            }
-          });
+            })
+            .catch(() => {
+              this.loading = false;
+              Swal.fire({ title: 'Ralat!', text: 'Gagal berkomunikasi dengan pelayan.', icon: 'error' });
+            });
         },
 
-        logKeluarAdmin() {
-          this.isAdmin = false;
-          this.tab = 'daftar';
-          this.form.program = '';
-          this.semakKeadaanProgram();
-          Swal.fire({
-            title: 'Sesi Ditutup!',
-            text: 'Sesi pentadbiran selamat berjaya ditutup.',
-            icon: 'info',
-            confirmButtonColor: '#3b82f6',
-            customClass: { popup: 'rounded-3xl' }
-          });
-        },
-
-        // PENGURUSAN TUKAR PIN KESELAMATAN ADMIN
-        tukarPinAdmin() {
-          // 1. Sahkan PIN lama betul
-          if (this.pinForm.old !== this.adminPin) {
-            Swal.fire({
-              title: 'Ralat PIN Lama!',
-              text: 'PIN Semasa yang dimasukkan adalah salah.',
-              icon: 'error',
-              confirmButtonColor: '#ef4444',
-              customClass: { popup: 'rounded-3xl' }
-            });
-            return;
-          }
-
-          // 2. Sahkan panjang PIN baru sah
-          if (this.pinForm.new.length < 4) {
-            Swal.fire({
-              title: 'PIN Terlalu Pendek!',
-              text: 'PIN Keselamatan baharu mestilah mengandungi sekurang-kurangnya 4 angka.',
-              icon: 'error',
-              confirmButtonColor: '#ef4444',
-              customClass: { popup: 'rounded-3xl' }
-            });
-            return;
-          }
-
-          // 3. Sahkan PIN baharu sepadan
-          if (this.pinForm.new !== this.pinForm.confirm) {
-            Swal.fire({
-              title: 'PIN Tidak Sepadan!',
-              text: 'Pengesahan PIN baharu anda tidak sepadan. Sila taip semula.',
-              icon: 'error',
-              confirmButtonColor: '#ef4444',
-              customClass: { popup: 'rounded-3xl' }
-            });
-            return;
-          }
-
-          // 4. Proses simpan PIN baharu ke Local Storage secara selamat
-          this.adminPin = this.pinForm.new;
-          localStorage.setItem('bt_pahat_admin_pin', this.adminPin);
-
-          // Kosongkan form kemas kini PIN
-          this.pinForm.old = '';
-          this.pinForm.new = '';
-          this.pinForm.confirm = '';
-
-          Swal.fire({
-            title: 'PIN Berjaya Diubah!',
-            text: 'Mulai sekarang, anda wajib menggunakan PIN Keselamatan baharu ini untuk membuka Portal Urus Setia.',
-            icon: 'success',
-            confirmButtonColor: '#10b981',
-            customClass: { popup: 'rounded-3xl' }
-          });
-        },
-
-        tambahProgramSesi() {
-          const tajukBaru = this.baruProgramInput.trim().toUpperCase();
-          const capBaru = parseInt(this.baruProgramCapacity);
-          const tarikhBaru = this.baruProgramDate;
-          const masaBaru = this.baruProgramTime;
-          const lokasiBaru = this.baruProgramLocation.trim().toUpperCase();
-
-          if (!tajukBaru || isNaN(capBaru) || capBaru < 1 || !tarikhBaru || !masaBaru || !lokasiBaru) {
-            Swal.fire({ title: 'Input Tidak Lengkap!', text: 'Sila pastikan Tajuk, Lokasi, Tarikh, Masa, dan Kapasiti diisi dengan lengkap.', icon: 'error', confirmButtonColor: '#ef4444' });
-            return;
-          }
-
-          if (this.programList.some(p => p.name === tajukBaru)) {
-            Swal.fire({
-              title: 'Program Sudah Ada!',
-              text: 'Tajuk program tersebut telah pun didaftarkan di dalam pangkalan data.',
-              icon: 'warning',
-              confirmButtonColor: '#f59e0b',
-              customClass: { popup: 'rounded-3xl' }
-            });
-            return;
-          }
-
-          // Simpan objek program dengan metadata lengkap
-          this.programList.push({ 
-            name: tajukBaru, 
-            capacity: capBaru, 
-            date: tarikhBaru, 
-            time: masaBaru,
-            location: lokasiBaru
-          });
-          localStorage.setItem('bt_pahat_program_list', JSON.stringify(this.programList));
-          
-          this.baruProgramInput = '';
-          this.baruProgramCapacity = 50;
-          this.baruProgramDate = '';
-          this.baruProgramTime = '';
-          this.baruProgramLocation = '';
-
-          Swal.fire({
-            title: 'Program Berjaya Ditambah!',
-            text: 'Butiran acara, lokasi penugasan, tarikh, masa lapor dan kapasiti telah aktif pada borang pilihan.',
-            icon: 'success',
-            confirmButtonColor: '#10b981',
-            customClass: { popup: 'rounded-3xl' }
-          });
-        },
-
-        padamProgramSesi(programVal) {
+        // PROSES AWAN: Padam Program Dari Google Sheets
+        padamProgramAwan(programName) {
           Swal.fire({
             title: 'Padam Program?',
-            text: `Adakah anda pasti mahu memadam program "${programVal}"?`,
+            text: `Adakah anda pasti mahu memadam program "${programName}" dari Google Sheets?`,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#ef4444',
             cancelButtonColor: '#475569',
             confirmButtonText: 'Ya, Padam',
-            cancelButtonText: 'Batal',
-            customClass: { popup: 'rounded-3xl' }
+            cancelButtonText: 'Batal'
           }).then((res) => {
             if (res.isConfirmed) {
-              this.programList = this.programList.filter(p => p.name !== programVal);
-              localStorage.setItem('bt_pahat_program_list', JSON.stringify(this.programList));
-              
-              if (this.form.program === programVal) {
-                this.form.program = '';
-                this.semakKeadaanProgram();
+              const pin = sessionStorage.getItem('rela_session_pin');
+              this.loading = true;
+              this.loadingMsg = 'Memadam program dari Google Sheets...';
+
+              const formData = new FormData();
+              formData.append('action', 'deleteProgram');
+              formData.append('pin', pin);
+              formData.append('name', programName);
+
+              fetch(this.gasUrl, { method: 'POST', body: formData })
+                .then(res => res.json())
+                .then(data => {
+                  this.loading = false;
+                  if (data.success) {
+                    Swal.fire({ title: 'Selesai!', text: 'Program telah dipadam secara kekal.', icon: 'success' });
+                    if (this.form.program === programName) {
+                      this.form.program = '';
+                      this.semakKeadaanProgram();
+                    }
+                    this.muatTurunDataAwan();
+                  } else {
+                    Swal.fire({ title: 'Gagal!', text: data.msg || 'Ralat pemadaman.', icon: 'error' });
+                  }
+                })
+                .catch(() => {
+                  this.loading = false;
+                  Swal.fire({ title: 'Ralat!', text: 'Gagal berkomunikasi dengan pelayan.', icon: 'error' });
+                });
+            }
+          });
+        },
+
+        // PROSES AWAN: Tukar PIN Keselamatan Pentadbir
+        tukarPinAwan() {
+          if (this.pinForm.new.length < 4) {
+            Swal.fire({ title: 'Terlalu Pendek!', text: 'PIN baharu sekurang-kurangnya 4 angka.', icon: 'error' });
+            return;
+          }
+
+          if (this.pinForm.new !== this.pinForm.confirm) {
+            Swal.fire({ title: 'Ralat Padanan!', text: 'Pengesahan PIN tidak sepadan.', icon: 'error' });
+            return;
+          }
+
+          const pin = sessionStorage.getItem('rela_session_pin');
+          this.loading = true;
+          this.loadingMsg = 'Mengubah PIN Keselamatan...';
+
+          const formData = new FormData();
+          formData.append('action', 'updatePin');
+          formData.append('pin', pin);
+          formData.append('oldPin', this.pinForm.old);
+          formData.append('newPin', this.pinForm.new);
+
+          fetch(this.gasUrl, { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(data => {
+              this.loading = false;
+              if (data.success) {
+                sessionStorage.setItem('rela_session_pin', this.pinForm.new);
+                this.pinForm.old = '';
+                this.pinForm.new = '';
+                this.pinForm.confirm = '';
+                Swal.fire({ title: 'PIN Diubah!', text: 'PIN keselamatan baharu telah didaftarkan.', icon: 'success', confirmButtonColor: '#10b981' });
+              } else {
+                Swal.fire({ title: 'Gagal!', text: data.msg || 'Gagal menukar PIN.', icon: 'error' });
               }
-              
-              Swal.fire({
-                title: 'Kemas Kini Selesai!',
-                text: 'Pilihan dibuang daripada pangkalan data.',
-                icon: 'success',
-                confirmButtonColor: '#3b82f6',
-                customClass: { popup: 'rounded-3xl' }
-              });
+            })
+            .catch(() => {
+              this.loading = false;
+              Swal.fire({ title: 'Ralat!', text: 'Gagal berkomunikasi dengan pelayan.', icon: 'error' });
+            });
+        },
+
+        // PROSES AWAN: Padam Semua Log Rekod Kehadiran
+        padamSemuaLogAwan() {
+          Swal.fire({
+            title: 'Padam Semua Log Kehadiran?',
+            text: 'Tindakan ini akan memadam keseluruhan data kehadiran dari Google Sheets!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#475569',
+            confirmButtonText: 'Ya, Padam Semua'
+          }).then((res) => {
+            if (res.isConfirmed) {
+              const pin = sessionStorage.getItem('rela_session_pin');
+              this.loading = true;
+              this.loadingMsg = 'Memadam semua log kehadiran...';
+
+              const formData = new FormData();
+              formData.append('action', 'clearLogs');
+              formData.append('pin', pin);
+
+              fetch(this.gasUrl, { method: 'POST', body: formData })
+                .then(res => res.json())
+                .then(data => {
+                  this.loading = false;
+                  if (data.success) {
+                    Swal.fire({ title: 'Dibersihkan!', text: 'Semua rekod kehadiran berjaya dipadam dari spreadsheet.', icon: 'success' });
+                    this.muatTurunDataAwan();
+                  } else {
+                    Swal.fire({ title: 'Gagal!', text: data.msg || 'Gagal memadam.', icon: 'error' });
+                  }
+                })
+                .catch(() => {
+                  this.loading = false;
+                  Swal.fire({ title: 'Ralat!', text: 'Gagal berkomunikasi dengan pelayan.', icon: 'error' });
+                });
             }
           });
         },
@@ -990,38 +1057,6 @@
           this.form.tel = val.replace(/[^0-9]/g, '');
         },
 
-        simpanGasUrl() {
-          localStorage.setItem('bt_pahat_gas_url', this.gasUrl.trim());
-          Swal.fire({
-            title: 'Konfigurasi Disimpan!',
-            text: 'Kunci URL berjaya dikoordinasikan.',
-            icon: 'success',
-            confirmButtonColor: '#3b82f6',
-            customClass: { popup: 'rounded-3xl' }
-          });
-        },
-
-        padamSesi() {
-          Swal.fire({
-            title: 'Nyahaktif Sesi Tempatan?',
-            text: 'Semua log visual sementara akan disifarkan kembali.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#ef4444',
-            cancelButtonColor: '#475569',
-            confirmButtonText: 'Ya, Padam',
-            cancelButtonText: 'Batal',
-            customClass: { popup: 'rounded-3xl' }
-          }).then((res) => {
-            if (res.isConfirmed) {
-              this.senaraiRekod = [];
-              localStorage.setItem('bt_pahat_log_kehadiran', JSON.stringify([]));
-              this.semakKeadaanProgram();
-              Swal.fire({ title: 'Sesi Disifarkan!', text: 'Rekod telah dikosongkan.', icon: 'success', confirmButtonColor: '#3b82f6', customClass: { popup: 'rounded-3xl' } });
-            }
-          });
-        },
-
         dapatkanRekodDitapis() {
           if (!this.carian.trim()) return this.senaraiRekod;
           const kuncicari = this.carian.toUpperCase();
@@ -1033,24 +1068,23 @@
           );
         },
 
+        // PROSES AWAN: Hantar Borang Kehadiran Anggota ke Google Sheets
         prosesPenyerahan() {
           if (!this.form.program) {
-            return Swal.fire({ title: 'Ralat!', text: 'Sila pilih program terlebih dahulu.', icon: 'warning', confirmButtonColor: '#f59e0b' });
+            return Swal.fire({ title: 'Ralat!', text: 'Sila pilih program terlebih dahulu.', icon: 'warning' });
           }
 
-          // Lakukan pengiraan keselamatan kapasiti sekali lagi sebelum hantar
           const target = this.programList.find(p => p.name === this.form.program);
           if (target) {
-            // Saringan Keselamatan Tambahan: Tolak jika program yang dipilih rupa-rupanya terlepas tarikh
             const nowKL = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kuala_Lumpur' }));
             const progDateTime = new Date(`${target.date}T${target.time}`);
             if (progDateTime < nowKL) {
-              return Swal.fire({ title: 'Ditolak!', text: 'Maaf, program ini telah ditutup kerana acara telah tamat.', icon: 'error', confirmButtonColor: '#ef4444' });
+              return Swal.fire({ title: 'Ditolak!', text: 'Maaf, program ini telah tamat.', icon: 'error', confirmButtonColor: '#ef4444' });
             }
 
             if (this.getRegisteredCount(this.form.program) >= target.capacity) {
               this.programIsFull = true;
-              return Swal.fire({ title: 'Ditolak!', text: 'Maaf, program ini telah ditutup kerana mencapai kapasiti maksimum.', icon: 'error', confirmButtonColor: '#ef4444' });
+              return Swal.fire({ title: 'Ditolak!', text: 'Maaf, program ini telah penuh.', icon: 'error', confirmButtonColor: '#ef4444' });
             }
           }
 
@@ -1062,107 +1096,42 @@
             return Swal.fire({ title: 'Ralat Telefon!', text: 'Sila masukkan no telefon bimbit yang sah (Mulai 01).', icon: 'error', confirmButtonColor: '#ef4444' });
           }
 
-          // Zon Waktu Standard Kuala Lumpur (Johor)
           const tarikhStandard = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kuala_Lumpur' });
           const dObj = new Date(tarikhStandard);
           const formattedTimestamp = `${String(dObj.getDate()).padStart(2, '0')}/${String(dObj.getMonth()+1).padStart(2, '0')}/${dObj.getFullYear()}, ${dObj.toLocaleTimeString('ms-MY', {hour: '2-digit', minute:'2-digit', second:'2-digit'})}`;
 
-          const payload = {
-            program: this.form.program,
-            nama: this.form.nama.trim(),
-            kp: "'" + this.form.kp.trim(), 
-            tel: "'" + this.form.tel.trim(), 
-            timestamp: formattedTimestamp
-          };
-
           this.loading = true;
+          this.loadingMsg = 'Merekodkan kehadiran anda ke Google Sheets...';
 
-          // MODAL SIMULASI JIKA TIADA URL GAS DISAMBUNGKAN
-          if (!this.gasUrl) {
-            setTimeout(() => {
+          const formData = new FormData();
+          formData.append('action', 'registerAttendance');
+          formData.append('program', this.form.program);
+          formData.append('nama', this.form.nama.trim());
+          formData.append('kp', "'" + this.form.kp.trim()); // Pengekalan sifar hadapan
+          formData.append('tel', "'" + this.form.tel.trim()); // Pengekalan sifar hadapan
+          formData.append('timestamp', formattedTimestamp);
+
+          fetch(this.gasUrl, { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(data => {
               this.loading = false;
-              
-              const dataBaru = {
-                program: payload.program,
-                nama: payload.nama,
-                kp: this.form.kp.trim(),
-                tel: this.form.tel.trim(),
-                timestamp: payload.timestamp
-              };
-              
-              this.senaraiRekod.unshift(dataBaru);
-              localStorage.setItem('bt_pahat_log_kehadiran', JSON.stringify(this.senaraiRekod));
-              
-              // Segarkan semula status live bar
-              this.semakKeadaanProgram();
-
-              Swal.fire({
-                title: 'Kehadiran Direkodkan!',
-                html: `<div class="text-left text-xs uppercase leading-relaxed font-bold p-4 bg-slate-900 rounded-2xl border border-white/5 space-y-1">
-                        <p class="text-emerald-400">Program: ${dataBaru.program}</p>
-                        <p>Petugas: ${dataBaru.nama}</p>
-                        <p>No. KP: ${dataBaru.kp}</p>
-                        <p>No. Tel: ${dataBaru.tel}</p>
-                        <p class="text-slate-500 pt-3 text-[9px] font-medium leading-normal normal-case">Nota: Rekod berjaya disimpan di pangkalan data local pelayar anda (Mod Pratonton). Sambungkan GAS di tab Tetapan untuk kemas kini terus ke Google Sheets Pejabat.</p>
-                       </div>`,
-                icon: 'success',
-                confirmButtonColor: '#10b981',
-                customClass: { popup: 'rounded-3xl' }
-              });
-
-              this.setSemulaBorang();
-            }, 800);
-            return;
-          }
-
-          // INTEGRASI REAL-TIME MELALUI POST KE WEB APP GAS SPREADSHEET
-          const bodyData = new FormData();
-          bodyData.append('program', payload.program);
-          bodyData.append('nama', payload.nama);
-          bodyData.append('kp', payload.kp);
-          bodyData.append('tel', payload.tel);
-          bodyData.append('timestamp', payload.timestamp);
-
-          fetch(this.gasUrl.trim(), {
-            method: 'POST',
-            body: bodyData,
-            mode: 'no-cors'
-          })
-          .then(() => {
-            this.loading = false;
-
-            const dataBaru = {
-              program: payload.program,
-              nama: payload.nama,
-              kp: this.form.kp.trim(),
-              tel: this.form.tel.trim(),
-              timestamp: payload.timestamp
-            };
-            this.senaraiRekod.unshift(dataBaru);
-            localStorage.setItem('bt_pahat_log_kehadiran', JSON.stringify(this.senaraiRekod));
-            
-            this.semakKeadaanProgram();
-
-            Swal.fire({
-              title: 'Rekod Pendaftaran Terpahat!',
-              text: 'Butiran kehadiran anda telah didaftarkan terus ke Google Spreadsheet Daerah Batu Pahat.',
-              icon: 'success',
-              confirmButtonColor: '#10b981',
-              customClass: { popup: 'rounded-3xl' }
+              if (data.success) {
+                Swal.fire({
+                  title: 'Kehadiran Direkod!',
+                  text: 'Pendaftaran anda berjaya didaftarkan secara real-time ke dalam Google Sheets Pejabat.',
+                  icon: 'success',
+                  confirmButtonColor: '#10b981'
+                });
+                this.setSemulaBorang();
+                this.muatTurunDataAwan();
+              } else {
+                Swal.fire({ title: 'Gagal!', text: data.msg || 'Gagal menyimpan.', icon: 'error' });
+              }
+            })
+            .catch(() => {
+              this.loading = false;
+              Swal.fire({ title: 'Ralat Rangkaian!', text: 'Tidak dapat menghubungi pelayan pangkalan data.', icon: 'error' });
             });
-
-            this.setSemulaBorang();
-          })
-          .catch((error) => {
-            this.loading = false;
-            Swal.fire({
-              title: 'Ralat Sambungan!',
-              text: 'Gagal menghubungi Google Apps Script. Sila sahkan kelayakan URL Web App anda.',
-              icon: 'error',
-              confirmButtonColor: '#ef4444',
-              customClass: { popup: 'rounded-3xl' }
-            });
-          });
         },
 
         setSemulaBorang() {

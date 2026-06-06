@@ -120,8 +120,9 @@
             <div class="relative">
               <select x-model="form.program" @change="semakKeadaanProgram()" required class="w-full px-5 py-4 glass-input rounded-2xl text-xs font-bold text-white outline-none cursor-pointer appearance-none">
                 <option value="" disabled selected>PILIH PROGRAM / ACARA...</option>
-                <template x-for="p in programList" :key="p.name">
-                  <option :value="p.name" x-text="p.name"></option>
+                <!-- Melukis senarai program yang telah disusun secara kronologi (Aktif di atas, Terlepas di bawah) -->
+                <template x-for="p in sortedProgramList" :key="p.name">
+                  <option :value="p.name" :disabled="p.isPast" x-text="p.isPast ? p.name + ' (TERLEPAS TARIKH)' : p.name" :class="p.isPast ? 'text-slate-500' : 'text-white font-extrabold'"></option>
                 </template>
               </select>
               <div class="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
@@ -129,7 +130,7 @@
               </div>
             </div>
             
-            <!-- ================= SISTEM INDIKATOR BUTIRAN & KAPASITI ANGGOTA (LIVE COUNT + TARIKH MASA + LOKASI) ================= -->
+            <!-- ================= SISTEM INDIKATOR BUTIRAN & KAPASITI ANGGOTA (LIVE COUNT + TARIKH MASA + LOKASI GOOGLE MAPS) ================= -->
             <div x-show="form.program" x-transition class="mt-4 p-5 bg-slate-900/80 rounded-2xl border border-white/5 space-y-4">
               
               <!-- Bahagian Paparan Tarikh & Masa Program -->
@@ -154,15 +155,24 @@
                 </div>
               </div>
 
-              <!-- Paparan Lokasi Acara Baru -->
-              <div class="flex items-center gap-3 border-b border-white/5 pb-4">
-                <div class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
-                  <i class="fas fa-location-dot text-xs animate-bounce"></i>
+              <!-- BUTIRAN LOKASI PROGRAM & TAUTAN GOOGLE MAPS PINTAR -->
+              <div class="flex items-start justify-between gap-4 border-b border-white/5 pb-4">
+                <div class="flex items-start gap-3">
+                  <div class="w-8 h-8 rounded-lg bg-amber-50/5 flex items-center justify-center text-amber-400 shrink-0 mt-0.5">
+                    <i class="fas fa-location-dot text-xs"></i>
+                  </div>
+                  <div>
+                    <span class="block text-[8px] font-black text-slate-500 uppercase tracking-widest">Lokasi Bertugas</span>
+                    <span class="text-xs font-black text-slate-200 uppercase leading-relaxed" x-text="currentLocation"></span>
+                  </div>
                 </div>
-                <div>
-                  <span class="block text-[8px] font-black text-slate-500 uppercase tracking-widest">Lokasi Penugasan</span>
-                  <span class="text-xs font-black text-slate-200 uppercase" x-text="currentLocation"></span>
-                </div>
+                
+                <!-- Butang Pandu ke Google Maps Pintar -->
+                <a :href="'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(currentLocation)" 
+                   target="_blank" 
+                   class="px-3.5 py-2 bg-blue-600/15 hover:bg-blue-600 border border-blue-500/20 hover:border-blue-500 text-blue-400 hover:text-white rounded-xl text-[9px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all shrink-0">
+                  <i class="fas fa-map-location-dot"></i> Pandu
+                </a>
               </div>
 
               <!-- Bar Kemajuan Visual Dinamik -->
@@ -237,25 +247,27 @@
       </div>
 
       <!-- ================= TAB 2: URUS PROGRAM (ADMIN PORTAL SAHAJA) ================= -->
-      <div x-show="tab === 'program' && isAdmin" x-transition class="glass-card rounded-[2.5rem] p-6 sm:p-8 shadow-2xl">
+      <div x-show="tab === 'program' && isAdmin" x-transition class="glass-card rounded-[2.5rem] p-6 sm:p-8 shadow-2xl relative">
         <div class="border-b border-white/5 pb-5 mb-6">
           <h3 class="text-lg font-black text-white uppercase tracking-wider"><i class="fas fa-calendar-plus text-amber-400 mr-2"></i>Urus Program, Jadual & Kapasiti</h3>
-          <p class="text-[10px] font-bold text-slate-400 uppercase mt-1">Daftar tajuk acara, tarikh, masa dan muatan kapasiti petugas</p>
+          <p class="text-[10px] font-bold text-slate-400 uppercase mt-1">Daftar tajuk acara, tarikh, masa, lokasi penugasan dan muatan kapasiti</p>
         </div>
 
         <!-- Borang Tambah Program Baru -->
         <form @submit.prevent="tambahProgramSesi" class="space-y-4 mb-6">
           <div class="grid grid-cols-1 gap-4">
-            <!-- Tajuk Program -->
-            <div>
-              <label class="block text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2 mb-2">Tajuk Program Baru *</label>
-              <input type="text" x-model="baruProgramInput" @input="baruProgramInput = $event.target.value.toUpperCase()" required placeholder="CONTOH: PROGRAM KHIDMAT KAWALAN TRAFIK BATU PAHAT" class="w-full px-5 py-4 glass-input rounded-2xl text-xs font-black text-white placeholder:text-slate-600 outline-none uppercase">
-            </div>
-
-            <!-- Lokasi Program Baru -->
-            <div>
-              <label class="block text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2 mb-2">Lokasi Penugasan/Acara *</label>
-              <input type="text" x-model="baruProgramLocation" @input="baruProgramLocation = $event.target.value.toUpperCase()" required placeholder="CONTOH: DATARAN PEJABAT DAERAH BATU PAHAT" class="w-full px-5 py-4 glass-input rounded-2xl text-xs font-black text-white placeholder:text-slate-600 outline-none uppercase">
+            
+            <div class="grid sm:grid-cols-2 gap-4">
+              <!-- Tajuk Program -->
+              <div>
+                <label class="block text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2 mb-2">Tajuk Program Baru *</label>
+                <input type="text" x-model="baruProgramInput" @input="baruProgramInput = $event.target.value.toUpperCase()" required placeholder="CONTOH: KAWALAN TRAFIK BATU PAHAT" class="w-full px-5 py-3.5 glass-input rounded-2xl text-xs font-black text-white placeholder:text-slate-600 outline-none uppercase">
+              </div>
+              <!-- Lokasi Program -->
+              <div>
+                <label class="block text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2 mb-2">Lokasi Penugasan (Rasmi) *</label>
+                <input type="text" x-model="baruProgramLocation" @input="baruProgramLocation = $event.target.value.toUpperCase()" required placeholder="CONTOH: STADIUM BATU PAHAT, JOHOR" class="w-full px-5 py-3.5 glass-input rounded-2xl text-xs font-black text-white placeholder:text-slate-600 outline-none uppercase">
+              </div>
             </div>
             
             <div class="grid sm:grid-cols-3 gap-4">
@@ -292,24 +304,85 @@
                   <span class="text-xs font-black text-white uppercase" x-text="p.name"></span>
                 </div>
                 
-                <!-- Butiran Masa, Tarikh, Lokasi Program di Panel Admin -->
+                <!-- Butiran Metadata Lengkap Program di Panel Admin -->
                 <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-[9px] font-bold uppercase mt-1 text-slate-400">
-                  <span><i class="fas fa-calendar-day mr-1 text-indigo-400"></i><strong class="text-slate-300" x-text="formatTarikh(p.date)"></strong></span>
-                  <span><i class="fas fa-clock mr-1 text-indigo-400"></i><strong class="text-slate-300" x-text="formatMasa(p.time)"></strong></span>
-                  <span><i class="fas fa-location-dot mr-1 text-emerald-400"></i><strong class="text-slate-300" x-text="p.location || 'BATU PAHAT'"></strong></span>
-                  <span><i class="fas fa-user-check mr-1 text-blue-400"></i>Terdaftar: <strong class="text-white" x-text="getRegisteredCount(p.name)"></strong> / <span x-text="p.capacity"></span></span>
+                  <span><i class="fas fa-calendar-day mr-1 text-indigo-400"></i><span class="text-slate-300" x-text="formatTarikh(p.date)"></span></span>
+                  <span><i class="fas fa-clock mr-1 text-indigo-400"></i><span class="text-slate-300" x-text="formatMasa(p.time)"></span></span>
+                  <span><i class="fas fa-location-dot mr-1 text-amber-500"></i><span class="text-slate-300 truncate max-w-[150px]" x-text="p.location"></span></span>
+                  <span><i class="fas fa-user-check mr-1 text-blue-400"></i>Log: <strong class="text-white" x-text="getRegisteredCount(p.name)"></strong> / <span x-text="p.capacity"></span></span>
                   <span :class="getRegisteredCount(p.name) >= p.capacity ? 'text-rose-400 bg-rose-500/10' : 'text-emerald-400 bg-emerald-500/10'" class="px-2 py-0.2 rounded text-[7px] font-black border border-white/5" x-text="getRegisteredCount(p.name) >= p.capacity ? 'PENUH' : 'ADA SLOT'"></span>
                 </div>
               </div>
-              <button @click="padamProgramSesi(p.name)" class="w-8 h-8 rounded-lg bg-rose-500/15 hover:bg-rose-500 text-rose-400 hover:text-white flex items-center justify-center transition-all flex-shrink-0">
-                <i class="fas fa-trash text-[10px]"></i>
-              </button>
+              
+              <!-- Butang Tindakan (Edit & Padam) -->
+              <div class="flex items-center gap-2 shrink-0">
+                <!-- Butang Edit Baru -->
+                <button @click="bukaEditProgram(p, index)" class="w-8 h-8 rounded-lg bg-blue-500/15 hover:bg-blue-500 text-blue-400 hover:text-white flex items-center justify-center transition-all" title="Ubah Maklumat Program">
+                  <i class="fas fa-pen-to-square text-[10px]"></i>
+                </button>
+                <!-- Butang Padam -->
+                <button @click="padamProgramSesi(p.name)" class="w-8 h-8 rounded-lg bg-rose-500/15 hover:bg-rose-500 text-rose-400 hover:text-white flex items-center justify-center transition-all" title="Hapus Program">
+                  <i class="fas fa-trash text-[10px]"></i>
+                </button>
+              </div>
             </div>
           </template>
           
           <div x-show="programList.length === 0" class="text-center p-8 bg-slate-950/40 rounded-2xl border border-dashed border-white/10">
             <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">TIADA PROGRAM AKTIF DIKUNCI. SILA TAMBAH DI ATAS.</p>
           </div>
+        </div>
+
+        <!-- ================================================================================= -->
+        <!-- ================= MODAL EDIT MAKLUMAT PROGRAM (GLASSMORPHISM COVE) ================= -->
+        <!-- ================================================================================= -->
+        <div x-show="editModal.open" class="absolute inset-0 z-50 bg-slate-950/90 backdrop-blur-md rounded-[2.5rem] p-6 sm:p-10 flex flex-col justify-center" x-transition>
+          <div class="border-b border-white/5 pb-4 mb-5">
+            <h3 class="text-base font-black text-amber-400 uppercase tracking-wider"><i class="fas fa-pen-to-square mr-2"></i>Kemaskini Maklumat Program</h3>
+            <p class="text-[9px] font-bold text-slate-400 uppercase mt-1">Ubah suai sebarang butiran program dan had kapasiti secara dinamik</p>
+          </div>
+
+          <form @submit.prevent="simpanEditProgram" class="space-y-4">
+            <div class="space-y-4">
+              <!-- Tajuk Program -->
+              <div>
+                <label class="block text-[9px] font-black uppercase text-slate-400 tracking-wider mb-1.5 ml-1">Tajuk Program</label>
+                <input type="text" x-model="editModal.name" @input="editModal.name = $event.target.value.toUpperCase()" required class="w-full px-5 py-3.5 glass-input rounded-2xl text-xs font-black text-white outline-none uppercase">
+              </div>
+              <!-- Lokasi Program -->
+              <div>
+                <label class="block text-[9px] font-black uppercase text-slate-400 tracking-wider mb-1.5 ml-1">Lokasi Program</label>
+                <input type="text" x-model="editModal.location" @input="editModal.location = $event.target.value.toUpperCase()" required class="w-full px-5 py-3.5 glass-input rounded-2xl text-xs font-black text-white outline-none uppercase">
+              </div>
+              
+              <div class="grid grid-cols-3 gap-4">
+                <!-- Tarikh Program -->
+                <div>
+                  <label class="block text-[9px] font-black uppercase text-slate-400 tracking-wider mb-1.5 ml-1">Tarikh</label>
+                  <input type="date" x-model="editModal.date" required class="w-full px-4 py-3.5 glass-input rounded-xl text-xs font-bold text-white outline-none">
+                </div>
+                <!-- Masa Program -->
+                <div>
+                  <label class="block text-[9px] font-black uppercase text-slate-400 tracking-wider mb-1.5 ml-1">Masa Lapor</label>
+                  <input type="time" x-model="editModal.time" required class="w-full px-4 py-3.5 glass-input rounded-xl text-xs font-bold text-white outline-none">
+                </div>
+                <!-- Kapasiti -->
+                <div>
+                  <label class="block text-[9px] font-black uppercase text-slate-400 tracking-wider mb-1.5 ml-1">Kapasiti</label>
+                  <input type="number" x-model.number="editModal.capacity" required min="1" max="500" class="w-full px-4 py-3.5 glass-input rounded-xl text-xs font-black text-white outline-none">
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 pt-4">
+              <button type="button" @click="editModal.open = false" class="w-full py-4 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all">
+                Batal
+              </button>
+              <button type="submit" class="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-500 hover:to-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-blue-500/20">
+                Simpan Perubahan
+              </button>
+            </div>
+          </form>
         </div>
       </div>
 
@@ -454,6 +527,17 @@
         currentTime: '',
         currentLocation: '',
 
+        // Papan Keadaan Modal Kemas Kini Program
+        editModal: {
+          open: false,
+          index: null,
+          name: '',
+          capacity: 50,
+          date: '',
+          time: '',
+          location: ''
+        },
+
         // Sistem Kredential Admin
         adminPin: '1234',
         pinForm: {
@@ -493,22 +577,21 @@
             localStorage.setItem('bt_pahat_log_kehadiran', JSON.stringify(this.senaraiRekod));
           }
 
-          // 4. Muatkan senarai Program Aktif (Dilengkapi Had Kapasiti, Tarikh, Masa & Lokasi)
+          // 4. Muatkan senarai Program Aktif
           const progDaftar = localStorage.getItem('bt_pahat_program_list');
           if (progDaftar) {
             try {
               const parsed = JSON.parse(progDaftar);
               this.programList = parsed.map(p => {
-                // Beri nilai lalai (default values) jika struktur program lama belum ada tarikh/masa/lokasi
                 if (typeof p === 'string') {
-                  return { name: p, capacity: 50, date: '2026-06-15', time: '08:00', location: 'BATU PAHAT' };
+                  return { name: p, capacity: 50, date: '2026-06-15', time: '08:00', location: 'PEJABAT RELA DAERAH BATU PAHAT' };
                 }
                 return {
                   name: p.name,
                   capacity: p.capacity || 50,
                   date: p.date || '2026-06-15',
                   time: p.time || '08:00',
-                  location: p.location || 'BATU PAHAT'
+                  location: p.location || 'PEJABAT RELA DAERAH BATU PAHAT'
                 };
               });
             } catch (e) {
@@ -521,9 +604,9 @@
 
         binaProgramLalai() {
           this.programList = [
-            { name: "PERBARISAN BULANAN ANGGOTA RELA DAERAH", capacity: 50, date: '2026-06-15', time: '08:00', location: "DATARAN PEJABAT RELA DAERAH BATU PAHAT" },
-            { name: "LATIHAN MENEMBAK TAHUNAN RELA DAERAH BATU PAHAT", capacity: 10, date: '2026-06-20', time: '09:00', location: "LAPANG SASAR GUNUNG BANANG, BATU PAHAT" },
-            { name: "PROGRAM KHIDMAT KOMUNITI & KESELAMATAN DAERAH", capacity: 30, date: '2026-06-25', time: '14:30', location: "DEWAN RAYA KAMPUNG PESERAI, BATU PAHAT" }
+            { name: "PERBARISAN BULANAN ANGGOTA RELA DAERAH", capacity: 50, date: '2026-06-15', time: '08:00', location: 'PEJABAT RELA DAERAH BATU PAHAT' },
+            { name: "LATIHAN MENEMBAK TAHUNAN RELA DAERAH BATU PAHAT", capacity: 10, date: '2026-06-20', time: '09:00', location: 'LAPANG SASAR PARIT SULONG, BATU PAHAT' },
+            { name: "PROGRAM KHIDMAT KOMUNITI & KESELAMATAN DAERAH", capacity: 30, date: '2026-06-25', time: '14:30', location: 'DEWAN ORANG RAMAI PARIT RAJA, BATU PAHAT' }
           ];
           localStorage.setItem('bt_pahat_program_list', JSON.stringify(this.programList));
         },
@@ -556,6 +639,29 @@
           return `${String(hour).padStart(2, '0')}:${min} ${suffix}`;
         },
 
+        // Menjana senarai program tersusun: Aktif di atas (kronologi menaik), Terlepas di bawah (kronologi menurun)
+        get sortedProgramList() {
+          const nowKL = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kuala_Lumpur' }));
+          
+          const mapped = this.programList.map(p => {
+            const progDateTime = new Date(`${p.date}T${p.time}`);
+            return {
+              ...p,
+              isPast: progDateTime < nowKL,
+              dateTimeObj: progDateTime
+            };
+          });
+
+          return mapped.sort((a, b) => {
+            if (a.isPast && !b.isPast) return 1;
+            if (!a.isPast && b.isPast) return -1;
+            if (!a.isPast && !b.isPast) {
+              return a.dateTimeObj - b.dateTimeObj; // Acara terdekat di atas
+            }
+            return b.dateTimeObj - a.dateTimeObj; // Acara terlepas baru di atas
+          });
+        },
+
         // Mengira secara live jumlah yang telah berdaftar bagi sesuatu program
         getRegisteredCount(programName) {
           return this.senaraiRekod.filter(r => r.program === programName).length;
@@ -575,11 +681,31 @@
 
           const target = this.programList.find(p => p.name === this.form.program);
           if (target) {
+            // Saringan Keselamatan: Sekat program jika terlepas tarikh
+            const nowKL = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kuala_Lumpur' }));
+            const progDateTime = new Date(`${target.date}T${target.time}`);
+            const isPast = progDateTime < nowKL;
+
             this.currentCapacity = target.capacity;
             this.currentDate = target.date;
             this.currentTime = target.time;
-            this.currentLocation = target.location || 'BATU PAHAT';
+            this.currentLocation = target.location || 'PEJABAT RELA DAERAH BATU PAHAT';
             this.currentRegCount = this.getRegisteredCount(this.form.program);
+            
+            if (isPast) {
+              this.programIsFull = true;
+              this.form.program = ''; // Nyahpilih program
+              Swal.fire({
+                title: 'Program Tamat!',
+                text: 'Maaf, pendaftaran program ini telah ditutup kerana acara bertugas telah terlepas tarikh.',
+                icon: 'error',
+                confirmButtonColor: '#ef4444',
+                customClass: { popup: 'rounded-3xl' }
+              });
+              this.semakKeadaanProgram();
+              return;
+            }
+
             this.programIsFull = (this.currentRegCount >= this.currentCapacity);
             
             if (this.programIsFull) {
@@ -591,6 +717,57 @@
                 customClass: { popup: 'rounded-3xl' }
               });
             }
+          }
+        },
+
+        // PINTU KAWALAN: Buka Borang Edit Program
+        bukaEditProgram(p, index) {
+          this.editModal.index = index;
+          this.editModal.name = p.name;
+          this.editModal.capacity = p.capacity;
+          this.editModal.date = p.date;
+          this.editModal.time = p.time;
+          this.editModal.location = p.location || '';
+          this.editModal.open = true;
+        },
+
+        // PROSES: Simpan Perubahan Maklumat Program Yang Diedit
+        simpanEditProgram() {
+          const idx = this.editModal.index;
+          if (idx === null || idx === undefined) return;
+
+          const updatedName = this.editModal.name.trim().toUpperCase();
+          const updatedLocation = this.editModal.location.trim().toUpperCase();
+          const updatedCapacity = parseInt(this.editModal.capacity);
+
+          if (!updatedName || !updatedLocation || isNaN(updatedCapacity) || updatedCapacity < 1 || !this.editModal.date || !this.editModal.time) {
+            Swal.fire({ title: 'Ralat!', text: 'Sila lengkapkan semua butiran program.', icon: 'error', confirmButtonColor: '#ef4444' });
+            return;
+          }
+
+          // Simpan objek kemas kini
+          this.programList[idx] = {
+            name: updatedName,
+            capacity: updatedCapacity,
+            date: this.editModal.date,
+            time: this.editModal.time,
+            location: updatedLocation
+          };
+
+          localStorage.setItem('bt_pahat_program_list', JSON.stringify(this.programList));
+          this.editModal.open = false;
+
+          Swal.fire({
+            title: 'Program Berjaya Diubah!',
+            text: 'Butiran penugasan program telah berjaya diperbaharui.',
+            icon: 'success',
+            confirmButtonColor: '#10b981',
+            customClass: { popup: 'rounded-3xl' }
+          });
+
+          // Segarkan semula status visual jika sedang aktif dipilih di borang depan
+          if (this.form.program) {
+            this.semakKeadaanProgram();
           }
         },
 
@@ -741,7 +918,7 @@
             return;
           }
 
-          // Simpan objek program dengan metadata lokasi lengkap
+          // Simpan objek program dengan metadata lengkap
           this.programList.push({ 
             name: tajukBaru, 
             capacity: capBaru, 
@@ -863,9 +1040,18 @@
 
           // Lakukan pengiraan keselamatan kapasiti sekali lagi sebelum hantar
           const target = this.programList.find(p => p.name === this.form.program);
-          if (target && this.getRegisteredCount(this.form.program) >= target.capacity) {
-            this.programIsFull = true;
-            return Swal.fire({ title: 'Ditolak!', text: 'Maaf, program ini telah ditutup kerana mencapai kapasiti maksimum.', icon: 'error', confirmButtonColor: '#ef4444' });
+          if (target) {
+            // Saringan Keselamatan Tambahan: Tolak jika program yang dipilih rupa-rupanya terlepas tarikh
+            const nowKL = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kuala_Lumpur' }));
+            const progDateTime = new Date(`${target.date}T${target.time}`);
+            if (progDateTime < nowKL) {
+              return Swal.fire({ title: 'Ditolak!', text: 'Maaf, program ini telah ditutup kerana acara telah tamat.', icon: 'error', confirmButtonColor: '#ef4444' });
+            }
+
+            if (this.getRegisteredCount(this.form.program) >= target.capacity) {
+              this.programIsFull = true;
+              return Swal.fire({ title: 'Ditolak!', text: 'Maaf, program ini telah ditutup kerana mencapai kapasiti maksimum.', icon: 'error', confirmButtonColor: '#ef4444' });
+            }
           }
 
           if (this.form.kp.length !== 12) {

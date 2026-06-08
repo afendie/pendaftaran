@@ -14,6 +14,9 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer crossorigin="anonymous"></script>
 
+  <!-- Pustaka Pengimbas Kamera QR HTML5 Rasmi -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" crossorigin="anonymous"></script>
+
   <!-- CSS Reka Bentuk Korporat Premium (Glassmorphism UI) -->
   <style>
     body {
@@ -104,8 +107,8 @@
   <main class="flex-1 overflow-y-auto p-4 sm:p-10 flex items-center justify-center">
     <div class="w-full max-w-2xl">
 
-      <!-- ================= JALUR KESELAMATAN: BANNER CONFIG ERROR (APABILA GAS URL BELUM DIKONFIGURASI) ================= -->
-      <div x-show="!gasUrl" x-transition class="glass-card rounded-[2.5rem] p-8 text-center space-y-6 relative overflow-hidden">
+      <!-- ================= JALUR KESELAMATAN: BANNER CONFIG ERROR (APABILA GAS_URL BELUM DIKONFIGURASI) ================= -->
+      <div x-show="!gasUrl || gasUrl.includes('YourActualID')" x-transition class="glass-card rounded-[2.5rem] p-8 text-center space-y-6 relative overflow-hidden">
         <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-red-500 to-amber-500"></div>
         <div class="w-20 h-20 bg-rose-500/10 text-rose-400 rounded-3xl flex items-center justify-center mx-auto text-3xl border border-rose-500/20">
           <i class="fas fa-triangle-exclamation"></i>
@@ -113,16 +116,13 @@
         <div>
           <h2 class="text-xl font-extrabold text-white uppercase tracking-wide">Pautan Server Belum Ditetapkan</h2>
           <p class="text-xs text-slate-400 mt-2 leading-relaxed">
-            Sistem memerlukan pautan Web App Google Apps Script yang aktif untuk sinkronisasi pangkalan data secara real-time sebelum pendaftaran dibuka bagi anggota.
+            Sistem memerlukan pautan Web App Google Apps Script yang aktif. Sila buka fail <span class="text-amber-400 font-mono">index.html</span> dan kemas kini pembolehubah <span class="text-amber-400 font-mono">GAS_URL</span> pada baris 788 menggunakan pautan Google Apps Script anda.
           </p>
         </div>
-        <p class="text-xs text-amber-400 font-bold uppercase leading-relaxed">
-          Sila edit kod index.html anda pada baris 790 untuk memasukkan URL Web App Google Apps Script anda yang sebenar.
-        </p>
       </div>
 
       <!-- ================= TAB 1: BORANG PENDAFTARAN ANGGOTA ================= -->
-      <div x-show="tab === 'daftar' && gasUrl" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" class="glass-card rounded-[2.5rem] p-6 sm:p-10 relative overflow-hidden">
+      <div x-show="tab === 'daftar' && gasUrl && !gasUrl.includes('YourActualID')" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" class="glass-card rounded-[2.5rem] p-6 sm:p-10 relative overflow-hidden">
         <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-600 via-indigo-500 to-amber-500"></div>
         
         <div class="text-center mb-8">
@@ -139,7 +139,6 @@
             <div class="relative">
               <select x-model="form.program" @change="semakKeadaanProgram()" required class="w-full px-5 py-4 glass-input rounded-2xl text-xs font-bold text-white outline-none cursor-pointer appearance-none">
                 <option value="" disabled selected>PILIH PROGRAM / ACARA...</option>
-                <!-- Melukis senarai program yang telah disusun secara kronologi (Aktif di atas, Terlepas di bawah) -->
                 <template x-for="p in sortedProgramList" :key="p.name">
                   <option :value="p.name" :disabled="p.isPast" x-text="p.isPast ? p.name + ' (WAKTU TERLEPAS)' : p.name" :class="p.isPast ? 'text-slate-500' : 'text-white font-extrabold'"></option>
                 </template>
@@ -168,7 +167,7 @@
                     <i class="fas fa-clock text-xs"></i>
                   </div>
                   <div>
-                    <span class="block text-[8px] font-black text-slate-500 uppercase tracking-widest">Masa Lapor</span>
+                    <span class="block text-[8px] font-black text-slate-500 uppercase tracking-widest">Waktu Lapor</span>
                     <span class="text-xs font-extrabold text-slate-200" x-text="formatMasa(currentTime)"></span>
                   </div>
                 </div>
@@ -181,7 +180,7 @@
                     <i class="fas fa-location-dot text-xs"></i>
                   </div>
                   <div>
-                    <span class="block text-[8px] font-black text-slate-500 uppercase tracking-widest">Lokasi Bertugas</span>
+                    <span class="block text-[8px] font-black text-slate-500 uppercase tracking-widest">Lokasi Penugasan</span>
                     <span class="text-xs font-black text-slate-200 uppercase leading-relaxed" x-text="currentLocation"></span>
                   </div>
                 </div>
@@ -217,7 +216,7 @@
               </div>
             </div>
 
-            <p x-show="programList.length === 0" class="text-[9px] text-rose-400 font-bold uppercase mt-2 ml-2">Belum ada program terdaftar dari server Google Sheets.</p>
+            <p x-show="programList.length === 0" class="text-[9px] text-rose-400 font-bold uppercase mt-2 ml-2">Belum ada program aktif dikesan di server.</p>
           </div>
 
           <!-- Nama Lengkap -->
@@ -243,7 +242,7 @@
 
             <!-- No. Telefon -->
             <div>
-              <label class="block text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2 mb-2">No. Telefon Bimbit *</label>
+              <label class="block text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2 mb-2">No. Telefon Seluler *</label>
               <div class="relative">
                 <input type="text" x-model="form.tel" @input="tapisTel($event)" required maxlength="11" placeholder="0123456789" class="w-full px-5 py-4 pl-12 glass-input rounded-2xl text-xs font-black tracking-wider text-white placeholder:text-slate-600 outline-none" :disabled="programIsFull">
                 <i class="fas fa-phone absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
@@ -252,14 +251,17 @@
             </div>
           </div>
 
-          <!-- Tombol Submit -->
-          <div class="pt-2">
+          <!-- Pintu Selamat Janaan Semula Pas QR Yang Hilang -->
+          <div class="pt-2 flex flex-col sm:flex-row gap-3">
+            <button type="button" @click="bukaPemulihanPasQR()" class="w-full sm:w-1/2 py-4 bg-slate-900 border border-white/5 hover:bg-slate-800 text-amber-400 rounded-2xl font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2">
+              <i class="fas fa-qrcode"></i> Pas Hilang? Cetak Semula
+            </button>
             <button type="submit" 
                     :disabled="programIsFull || programList.length === 0" 
                     :class="(programIsFull || programList.length === 0) ? 'from-slate-800 to-slate-900 text-slate-500 cursor-not-allowed border border-white/5 opacity-50 shadow-none' : 'from-blue-600 to-indigo-700 hover:from-blue-500 hover:to-indigo-600 text-white shadow-xl hover:shadow-blue-500/10 active:scale-[0.98]'"
-                    class="w-full py-4.5 bg-gradient-to-r rounded-2xl font-extrabold text-xs uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3">
+                    class="flex-1 py-4 bg-gradient-to-r rounded-2xl font-extrabold text-xs uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3">
               <i class="fas fa-circle-check text-sm" :class="programIsFull ? 'text-slate-600' : 'text-amber-400'"></i> 
-              <span x-text="programIsFull ? 'DAFTAR DITUTUP (KUOTA PENUH)' : 'Kirim Kehadiran Sekarang'"></span>
+              <span x-text="programIsFull ? 'KUOTA PENUH' : 'Kirim Kehadiran'"></span>
             </button>
           </div>
         </form>
@@ -280,7 +282,6 @@
           <!-- Kad Informasi Pas Digital RELA (Sedia untuk Screenshot) -->
           <div class="mt-4 p-4 bg-slate-900/90 rounded-2xl border border-white/5 space-y-3 text-left">
             <div class="text-center border-b border-white/5 pb-3">
-              <!-- QR Code Bersepadu untuk Pengesahan Kaunter -->
               <img :src="'https://api.qrserver.com/v1/create-qr-code/?size=150x150&color=d97706&bgcolor=0f172a&data=' + encodeURIComponent(pasModal.kp)" 
                    class="w-32 h-32 mx-auto rounded-xl border-2 border-amber-500/20 p-1 bg-slate-950" 
                    alt="QR Code Kehadiran">
@@ -388,14 +389,15 @@
         </div>
 
         <!-- ================= MODAL EDIT DATA PROGRAM (ADMIN) ================= -->
-        <div x-show="editModal.open" class="absolute inset-0 z-50 bg-slate-950/95 backdrop-blur-md rounded-[2.5rem] p-6 sm:p-10 flex flex-col justify-center" x-transition>
-          <div class="border-b border-white/5 pb-4 mb-5">
+        <!-- Reka bentuk modal dilaraskan kepada "items-start pt-6 pb-24" bagi skrol keyboard kalis ralat -->
+        <div x-show="editModal.open" class="absolute inset-0 z-50 bg-slate-950/95 backdrop-blur-md rounded-[2.5rem] p-6 sm:p-10 flex flex-col justify-start items-start pt-6 pb-24 overflow-y-auto" x-transition>
+          <div class="border-b border-white/5 pb-4 mb-5 w-full">
             <h3 class="text-base font-black text-amber-400 uppercase tracking-wider"><i class="fas fa-pen-to-square mr-2"></i>Kemaskini Maklumat Program</h3>
             <p class="text-[9px] font-bold text-slate-400 uppercase mt-1">Ubah suai sebarang butiran program dan had kuota secara dinamik</p>
           </div>
 
-          <form @submit.prevent="simpanEditProgramAwan" class="space-y-4">
-            <div class="space-y-4">
+          <form @submit.prevent="simpanEditProgramAwan" class="space-y-4 w-full">
+            <div class="space-y-4 w-full">
               <!-- Nama Program (Terkunci) -->
               <div>
                 <label class="block text-[9px] font-black uppercase text-slate-400 tracking-wider mb-1.5 ml-1">Tajuk Program</label>
@@ -439,7 +441,7 @@
         </div>
       </div>
 
-      <!-- ================= TAB 3: PENGESAHAN KEHADIRAN PORTAL / QR KIOSK (ADMIN SAHAJA - BARU) ================= -->
+      <!-- ================= TAB 3: PENGESAHAN KEHADIRAN PORTAL / QR KIOSK (ADMIN SAHAJA) ================= -->
       <div x-show="tab === 'pengesahan' && isAdmin" x-transition class="glass-card rounded-[2.5rem] p-6 sm:p-8 shadow-2xl relative">
         <div class="border-b border-white/5 pb-4 mb-6">
           <h3 class="text-lg font-black text-white uppercase tracking-wider"><i class="fas fa-qrcode text-amber-500 mr-2"></i>Kaunter Pengesahan QR / No. KP</h3>
@@ -459,7 +461,17 @@
               </button>
             </div>
             
-            <p class="text-[9px] text-slate-500 font-bold uppercase text-center">Sistem akan menyemak silang No. KP ini dengan rekod pendaftaran sedia ada di pangkalan data Google Sheets.</p>
+            <!-- Butang Pencetus Imbasan Kamera Native Bersepadu -->
+            <button @click="bukaKameraPengimbas()" class="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-lg">
+              <i class="fas fa-camera"></i> Aktifkan Kamera Telefon (Scan QR)
+            </button>
+          </div>
+
+          <!-- Video Reader Area (Suapan Kamera Imbasan QR) -->
+          <div x-show="scanState.active" class="p-4 bg-slate-900 border border-white/10 rounded-3xl text-center">
+            <div id="native-camera-reader" class="w-full max-w-xs mx-auto aspect-square rounded-2xl overflow-hidden bg-slate-950 border border-slate-800"></div>
+            <p class="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-2 animate-pulse"><i class="fas fa-circle-info"></i> Sila halakan kamera peranti ke Pas QR Anggota</p>
+            <button type="button" @click="tutupKameraPengimbas()" class="mt-4 px-6 py-2 bg-rose-500/10 hover:bg-rose-500 text-rose-400 hover:text-white rounded-xl text-[10px] font-black uppercase transition-all">Hentikan Kamera</button>
           </div>
 
           <!-- Statistik Ringkas Kaunter Hadir Real-Time -->
@@ -513,7 +525,7 @@
               <template x-for="(r, i) in dapatkanRekodDitapis()" :key="r.kp + '_' + r.program">
                 <tr class="hover:bg-slate-900/50 transition-colors">
                   <td class="p-4 text-center text-slate-500" x-text="i + 1"></td>
-                  <td class="p-4 text-amber-400 truncate max-w-[120px]" x-text="r.program"></td>
+                  <td class="p-4 text-amber-400 truncate max-w-[140px]" x-text="r.program"></td>
                   <td class="p-4 text-white font-extrabold" x-text="r.nama"></td>
                   <td class="p-4 text-center text-slate-300 font-mono" x-text="r.kp"></td>
                   <td class="p-4 text-center">
@@ -553,14 +565,15 @@
         </div>
 
         <!-- ================= MODAL EDIT REKOD KEHADIRAN ANGGOTA ================= -->
-        <div x-show="editRecordModal.open" class="absolute inset-0 z-50 bg-slate-950/95 backdrop-blur-md rounded-[2.5rem] p-6 sm:p-10 flex flex-col justify-center" x-transition>
-          <div class="border-b border-white/5 pb-4 mb-5">
+        <!-- Reka bentuk dilaraskan kepada "items-start pt-6 pb-24 overflow-y-auto" bagi membolehkan skrol penuh pada skrin kecil semasa virtual keyboard terbuka -->
+        <div x-show="editRecordModal.open" class="absolute inset-0 z-50 bg-slate-950/95 backdrop-blur-md rounded-[2.5rem] p-6 sm:p-10 flex flex-col justify-start items-start pt-6 pb-24 overflow-y-auto" x-transition>
+          <div class="border-b border-white/5 pb-4 mb-5 w-full">
             <h3 class="text-base font-black text-amber-400 uppercase tracking-wider"><i class="fas fa-user-pen mr-2"></i>Edit Butiran Kehadiran Anggota</h3>
             <p class="text-[9px] font-bold text-slate-400 uppercase mt-1">Ubah suai maklumat profil anggota yang telah didaftarkan dalam program ini</p>
           </div>
 
-          <form @submit.prevent="simpanEditRekodAwan" class="space-y-4">
-            <div class="space-y-4">
+          <form @submit.prevent="simpanEditRekodAwan" class="space-y-4 w-full">
+            <div class="space-y-4 w-full">
               <!-- Tajuk Program (Terkunci) -->
               <div>
                 <label class="block text-[9px] font-black uppercase text-slate-400 tracking-wider mb-1.5 ml-1">Program Bertugas</label>
@@ -587,7 +600,7 @@
               </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-4 pt-4">
+            <div class="grid grid-cols-2 gap-4 pt-4 w-full">
               <button type="button" @click="editRecordModal.open = false" class="w-full py-4 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all">
                 Batal
               </button>
@@ -645,11 +658,11 @@
   </main>
 
   <!-- ================= FOOTER KORPORAT & PORTAL GATEWAY ================= -->
-  <footer class="w-full py-5 px-6 border-t border-white/5 bg-slate-950/80 backdrop-blur-md flex justify-between items-center shrink-0">
-    <p class="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">&copy; 2026 PEJABAT RELA DAERAH BATU PAHAT.</p>
+  <footer class="w-full py-5 px-6 border-t border-white/5 bg-slate-950/80 backdrop-blur-md flex justify-between items-center shrink-0 text-slate-400">
+    <p class="text-[9px] font-bold uppercase tracking-[0.2em]">&copy; 2026 PEJABAT RELA DAERAH BATU PAHAT.</p>
     
     <!-- Butang Gateway Masuk ke Mod Admin -->
-    <button @click="bukaAdminVault" class="text-[9px] font-black text-slate-400 hover:text-amber-400 uppercase tracking-widest flex items-center gap-2 transition-colors">
+    <button @click="bukaAdminVault" class="text-[9px] font-black hover:text-amber-400 uppercase tracking-widest flex items-center gap-2 transition-colors">
       <i class="fas fa-lock text-[8px]"></i> Urus Setia
     </button>
   </footer>
@@ -659,7 +672,7 @@
     // =========================================================================
     // KONFIGURASI WEB APP GOOGLE APPS SCRIPT (GAS) BERPUSAT
     // =========================================================================
-    // Sila gantikan ID pautan Web App Apps Script anda di bawah ini!
+    // Sila pastikan anda mengemaskini pautan Web App anda di bawah ini!
     const GAS_URL = "https://script.google.com/macros/s/AKfycbwyYzVIyN_GHsz_z_rnuNZawpFqsXVRkY-1KqXNpRIxf1gzGQee0gSn79ymVYxw7NbX/exec";
 
     function appManager() {
@@ -670,7 +683,7 @@
         isAdmin: false,
         gasUrl: GAS_URL,
         carian: '',
-        quickVerifyInput: '', // Input untuk carian QR / No. KP
+        quickVerifyInput: '', // Input No. KP manual di kaunter
         
         // Form Input Program Baru Admin
         baruProgramInput: '',
@@ -717,6 +730,12 @@
           kp: '',
           tarikh: '',
           lokasi: ''
+        },
+
+        // Keadaan Logik Kamera Pengimbas Native
+        scanState: {
+          active: false,
+          engine: null
         },
 
         // Sistem Kredential Admin
@@ -899,6 +918,49 @@
           }
         },
 
+        // JANAAN/REKUPERASI SEMULA PAS QR YANG HILANG (PILIHAN LAYAN DIRI ANGGOTA)
+        bukaPemulihanPasQR() {
+          Swal.fire({
+            title: 'Carian Pas Kehadiran',
+            text: 'Sila masukkan No. Kad Pengenalan 12-digit anda:',
+            input: 'text',
+            inputPlaceholder: '981204015533',
+            inputAttributes: { maxlength: '12' },
+            showCancelButton: true,
+            confirmButtonText: 'Semak Rekod',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#3b82f6',
+            customClass: { popup: 'rounded-3xl' }
+          }).then((result) => {
+            if (result.isConfirmed) {
+              const checkKp = result.value.replace(/[^0-9]/g, '').trim();
+              if (checkKp.length !== 12) {
+                Swal.fire({ title: 'Ralat KP!', text: 'Sila pastikan No. KP dimasukkan tepat 12 digit.', icon: 'error' });
+                return;
+              }
+
+              // Cari pendaftaran di dalam pangkalan data
+              const match = this.senaraiRekod.find(r => r.kp === checkKp);
+              if (match) {
+                const programTarget = this.programList.find(p => p.name === match.program);
+                this.pasModal.program = match.program;
+                this.pasModal.nama = match.nama;
+                this.pasModal.kp = match.kp;
+                this.pasModal.tarikh = programTarget ? programTarget.date : '';
+                this.pasModal.lokasi = programTarget ? programTarget.location : 'PEJABAT RELA DAERAH BATU PAHAT';
+                this.pasModal.open = true; // Munculkan modal Pas Digital asal
+              } else {
+                Swal.fire({
+                  title: 'Rekod Tiada!',
+                  text: 'Maaf, No. Kad Pengenalan ini tidak ditemui dalam rekod mana-mana pendaftaran program aktif.',
+                  icon: 'error',
+                  confirmButtonColor: '#ef4444'
+                });
+              }
+            }
+          });
+        },
+
         // Buka Portal Urus Setia
         bukaAdminVault() {
           if (!this.gasUrl) return;
@@ -955,6 +1017,7 @@
           this.isAdmin = false;
           this.tab = 'daftar';
           this.form.program = '';
+          this.tutupKameraPengimbas();
           sessionStorage.removeItem('rela_session_pin');
           this.semakKeadaanProgram();
           Swal.fire({ title: 'Sesi Ditutup!', text: 'Mod pentadbiran selamat berjaya ditutup.', icon: 'info', confirmButtonColor: '#3b82f6' });
@@ -1105,7 +1168,7 @@
           });
         },
 
-        // PINTU KAWALAN: Buka Modal Edit Rekod Anggota
+        // PINTU KAWALAN: Buka Modal Edit Rekod Anggota (Scroll-friendly)
         bukaEditRekod(rekod, i) {
           this.editRecordModal.index = i;
           this.editRecordModal.oldKp = rekod.kp;
@@ -1126,7 +1189,7 @@
           this.editRecordModal.tel = val.replace(/[^0-9]/g, '');
         },
 
-        // PROSES AWAN: Hantar Suntingan Rekod Anggota ke Pelayan GAS
+        // PROSES AWAN: Hantar Suntingan Rekod Anggota ke Pelayan GAS (Dengan Saringan Duplikasi)
         simpanEditRekodAwan() {
           const updatedNama = this.editRecordModal.nama.trim().toUpperCase();
           const updatedKp = this.editRecordModal.kp.trim();
@@ -1144,8 +1207,8 @@
 
           // Cek sekiranya No. KP yang baru diedit menyebabkan duplikasi dengan rekod sedia ada (selain rekod ini sendiri)
           const isDuplicate = this.senaraiRekod.some((r, idx) => {
-            return idx !== this.editRecordModal.index && 
-                   r.program === this.editRecordModal.program && 
+            return r.program === this.editRecordModal.program && 
+                   r.kp !== this.editRecordModal.oldKp && 
                    (r.kp === updatedKp || r.nama === updatedNama);
           });
 
@@ -1177,12 +1240,7 @@
             .then(data => {
               this.loading = false;
               if (data.success) {
-                Swal.fire({
-                  title: 'Rekod Dikemaskini!',
-                  text: 'Butiran pendaftaran anggota telah berjaya dikemaskini dalam pangkalan data berpusat.',
-                  icon: 'success',
-                  confirmButtonColor: '#10b981'
-                });
+                Swal.fire({ title: 'Rekod Dikemaskini!', text: 'Butiran pendaftaran anggota telah berjaya dikemaskini.', icon: 'success', confirmButtonColor: '#10b981' });
                 this.editRecordModal.open = false;
                 this.muatTurunDataAwan();
               } else {
@@ -1223,12 +1281,7 @@
                 .then(data => {
                   this.loading = false;
                   if (data.success) {
-                    Swal.fire({
-                      title: 'Rekod Dipadam!',
-                      text: 'Pendaftaran anggota tersebut telah dibuang daripada Google Sheets Pejabat.',
-                      icon: 'success',
-                      confirmButtonColor: '#10b981'
-                    });
+                    Swal.fire({ title: 'Rekod Dipadam!', text: 'Pendaftaran anggota tersebut telah dibuang daripada Google Sheets.', icon: 'success', confirmButtonColor: '#10b981' });
                     this.muatTurunDataAwan();
                   } else {
                     Swal.fire({ title: 'Gagal!', text: data.msg || 'Gagal memproses tindakan pemadaman.', icon: 'error' });
@@ -1242,54 +1295,82 @@
           });
         },
 
-        // =========================================================================
-        // JALUR OPERASI BARU: SAHKAN KEHADIRAN PORTAL / QR KIOSK (ADMIN)
-        // =========================================================================
+        // ==============================================================
+        // ENJIN PEMINDAI NATIVE CAMERA - SCAN QR CODE (PENGESAHAN LAPANGAN)
+        // ==============================================================
+        bukaKameraPengimbas() {
+          this.scanState.active = true;
+          this.$nextTick(() => {
+            this.scanState.engine = new Html5Qrcode("native-camera-reader");
+            
+            const onScanSuccess = (decodedText) => {
+              // Mainkan bunyi Beep digital sekiranya AudioContext disokong pelayar
+              try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator();
+                osc.type = 'sine'; osc.frequency.setValueAtTime(1000, audioCtx.currentTime);
+                osc.connect(audioCtx.destination); osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+              } catch(e){}
 
-        // PROSES AWAN: Imbas / Taip No. KP untuk Sahkan Hadir (Kaunter Pintu Masuk)
+              // Hentikan kamera dan terus sahkan kehadiran No. KP yang diimbas
+              this.tutupKameraPengimbas();
+              this.quickVerifyInput = decodedText;
+              this.sahkanKehadiranPantasAwan();
+            };
+
+            const config = { fps: 15, qrbox: { width: 220, height: 220 } };
+            this.scanState.engine.start({ facingMode: "environment" }, config, onScanSuccess)
+              .catch(() => {
+                document.getElementById('native-camera-reader').innerHTML = `
+                  <div class="p-8 text-center text-rose-500 font-bold text-xs uppercase flex flex-col items-center justify-center h-full aspect-square">
+                    <i class="fas fa-camera-slash text-2xl mb-2"></i> Sekatan Perkakasan!<br><span class="text-[9px] mt-1 normal-case text-slate-400">Sila benarkan kebenaran kamera pelayar.</span>
+                  </div>`;
+              });
+          });
+        },
+
+        tutupKameraPengimbas() {
+          if (this.scanState.engine) {
+            this.scanState.engine.stop().then(() => {
+              this.scanState.active = false;
+              this.scanState.engine = null;
+            }).catch(() => {
+              this.scanState.active = false;
+              this.scanState.engine = null;
+            });
+          }
+        },
+
+        // PROSES AWAN: Sahkan Hadir (Kaunter QR / No. KP manual)
         sahkanKehadiranPantasAwan() {
           const rawKpInput = this.quickVerifyInput.trim();
           if (rawKpInput.length !== 12) {
-            Swal.fire({ title: 'Format Tidak Sah!', text: 'Sila masukkan tepat 12 digit No. KP untuk tujuan pengesahan.', icon: 'warning', confirmButtonColor: '#f59e0b' });
+            Swal.fire({ title: 'No. KP Tidak Sah!', text: 'Sila pastikan tepat 12 digit dimasukkan.', icon: 'warning' });
             return;
           }
 
-          // Cari jika No KP berdaftar dalam log senarai (Mencari program aktif yang tidak luput)
           const match = this.senaraiRekod.find(r => r.kp === rawKpInput);
           if (!match) {
-            Swal.fire({
-              title: 'Anggota Tidak Berdaftar!',
-              text: 'Maaf, No. Kad Pengenalan ini tidak ditemui dalam mana-mana pendaftaran program aktif. Sila daftar terlebih dahulu.',
-              icon: 'error',
-              confirmButtonColor: '#ef4444'
-            });
+            Swal.fire({ title: 'Anggota Tidak Berdaftar!', text: 'No. KP ini tidak ditemui dalam mana-mana pendaftaran program aktif.', icon: 'error' });
             return;
           }
 
           if (match.status === 'DISAHKAN HADIR') {
-            Swal.fire({
-              title: 'Sudah Disahkan!',
-              html: `<p class="text-xs uppercase font-bold text-emerald-400">Anggota ini telah pun disahkan hadir bertugas sebelum ini!</p>
-                     <p class="text-[10px] text-slate-500 mt-2">Masa Sah: ${match.verifiedTime}</p>`,
-              icon: 'info',
-              confirmButtonColor: '#3b82f6'
-            });
+            Swal.fire({ title: 'Sudah Disahkan!', text: `Kehadiran anggota ini sudah disahkan pada: ${match.verifiedTime}`, icon: 'info' });
             this.quickVerifyInput = '';
             return;
           }
 
-          // Jalankan pengesahan kehadiran fizikal ke awan Google Sheets
           this.sahkanRekodManualAwan(match);
           this.quickVerifyInput = '';
         },
 
-        // PROSES AWAN: Urus Setia Klik "Sahkan Hadir" Manual Pada Jadual Log
+        // PROSES AWAN: Sahkan Kehadiran Fizikal Manual
         sahkanRekodManualAwan(rekod) {
           const pin = sessionStorage.getItem('rela_session_pin');
           this.loading = true;
-          this.loadingMsg = 'Mengesahkan kehadiran fizikal anggota...';
+          this.loadingMsg = 'Mengesahkan kehadiran fizikal...';
 
-          // Dapatkan waktu tempatan Malaysia untuk cap waktu pengesahan
           const tarikhStandard = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kuala_Lumpur' });
           const dObj = new Date(tarikhStandard);
           const formattedVerifiedTime = `${String(dObj.getDate()).padStart(2, '0')}/${String(dObj.getMonth()+1).padStart(2, '0')}/${dObj.getFullYear()}, ${dObj.toLocaleTimeString('ms-MY', {hour: '2-digit', minute:'2-digit', second:'2-digit'})}`;
@@ -1319,7 +1400,7 @@
                 });
                 this.muatTurunDataAwan();
               } else {
-                Swal.fire({ title: 'Ralat Pengesahan!', text: data.msg || 'Gagal merekod status.', icon: 'error' });
+                Swal.fire({ title: 'Ralat!', text: data.msg, icon: 'error' });
               }
             })
             .catch(() => {
@@ -1395,10 +1476,10 @@
                 .then(data => {
                   this.loading = false;
                   if (data.success) {
-                    Swal.fire({ title: 'Dibersihkan!', text: 'Semua rekod kehadiran berjaya dipadam dari spreadsheet.', icon: 'success' });
+                    Swal.fire({ title: 'Dibersihkan!', text: 'Semua rekod pendaftaran dipadam.', icon: 'success' });
                     this.muatTurunDataAwan();
                   } else {
-                    Swal.fire({ title: 'Gagal!', text: data.msg || 'Gagal memadam.', icon: 'error' });
+                    Swal.fire({ title: 'Gagal!', text: data.msg, icon: 'error' });
                   }
                 })
                 .catch(() => {
@@ -1435,10 +1516,10 @@
           );
         },
 
-        // PROSES AWAN: Hantar Borang Kehadiran Anggota ke Google Sheets (Kalis Duplikasi)
+        // PROSES AWAN: Hantar Pendaftaran (Dengan Saringan Duplikasi Dwilapis)
         prosesPenyerahan() {
           if (!this.form.program) {
-            return Swal.fire({ title: 'Kesalahan!', text: 'Silakan pilih program terlebih dahulu.', icon: 'warning', confirmButtonColor: '#f59e0b', customClass: { popup: 'rounded-3xl' } });
+            return Swal.fire({ title: 'Kesalahan!', text: 'Sila pilih program terlebih dahulu.', icon: 'warning', confirmButtonColor: '#f59e0b' });
           }
 
           const target = this.programList.find(p => p.name === this.form.program);
@@ -1446,24 +1527,24 @@
             const nowKL = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kuala_Lumpur' }));
             const progDateTime = new Date(`${target.date}T${target.time}`);
             if (progDateTime < nowKL) {
-              return Swal.fire({ title: 'Ditolak!', text: 'Maaf, program ini telah berakhir.', icon: 'error', confirmButtonColor: '#ef4444', customClass: { popup: 'rounded-3xl' } });
+              return Swal.fire({ title: 'Ditolak!', text: 'Maaf, program ini telah berakhir.', icon: 'error', confirmButtonColor: '#ef4444' });
             }
 
             if (this.getRegisteredCount(this.form.program) >= target.capacity) {
               this.programIsFull = true;
-              return Swal.fire({ title: 'Ditolak!', text: 'Maaf, kuota program ini telah penuh.', icon: 'error', confirmButtonColor: '#ef4444', customClass: { popup: 'rounded-3xl' } });
+              return Swal.fire({ title: 'Ditolak!', text: 'Maaf, kuota program ini telah penuh.', icon: 'error', confirmButtonColor: '#ef4444' });
             }
           }
 
           if (this.form.kp.length !== 12) {
-            return Swal.fire({ title: 'Format MyKad/KTP Salah!', text: 'Nomor identitas harus tepat 12 digit.', icon: 'error', confirmButtonColor: '#ef4444', customClass: { popup: 'rounded-3xl' } });
+            return Swal.fire({ title: 'Ralat KP!', text: 'Nomor identitas Kad Pengenalan mestilah tepat 12 digit.', icon: 'error', confirmButtonColor: '#ef4444' });
           }
 
           if (!this.form.tel.startsWith('01') || this.form.tel.length < 10) {
-            return Swal.fire({ title: 'Format Telepon Salah!', text: 'Silakan masukkan nomor telepon seluler yang valid (dimulai dengan 01).', icon: 'error', confirmButtonColor: '#ef4444', customClass: { popup: 'rounded-3xl' } });
+            return Swal.fire({ title: 'Ralat Telefon!', text: 'Silakan masukkan nomor telefon bimbit yang valid (mula 01).', icon: 'error', confirmButtonColor: '#ef4444' });
           }
 
-          // [SARINGAN PENCEGAHAN DUPLIKASI - FRONTEND]
+          // [SARINGAN DUPLIKASI - FRONTEND]
           const incomingKp = this.form.kp.trim();
           const incomingNama = this.form.nama.trim().toUpperCase();
           const isDuplicate = this.senaraiRekod.some(r => {
@@ -1501,23 +1582,23 @@
             .then(data => {
               this.loading = false;
               if (data.success) {
-                // Berjaya Daftar: Panggil dan Paparkan Pas Digital Kehadiran Anggota berserta QR Code
+                // Sediakan paparan Pas Digital dengan QR Code
                 this.pasModal.program = this.form.program;
                 this.pasModal.nama = incomingNama;
                 this.pasModal.kp = incomingKp;
                 this.pasModal.tarikh = target ? target.date : '';
                 this.pasModal.lokasi = target ? target.location : 'PEJABAT RELA DAERAH BATU PAHAT';
-                this.pasModal.open = true;
+                this.pasModal.open = true; // Munculkan modal Pas Digital
 
                 this.setSemulaBorang();
                 this.muatTurunDataAwan();
               } else {
-                Swal.fire({ title: 'Gagal!', text: data.msg || 'Gagal menyimpan data.', icon: 'error', confirmButtonColor: '#ef4444', customClass: { popup: 'rounded-3xl' } });
+                Swal.fire({ title: 'Gagal!', text: data.msg || 'Gagal menyimpan.', icon: 'error', confirmButtonColor: '#ef4444' });
               }
             })
             .catch(() => {
               this.loading = false;
-              Swal.fire({ title: 'Kesalahan Jaringan!', text: 'Tidak dapat menghubungi server pangkalan data.', icon: 'error', confirmButtonColor: '#ef4444', customClass: { popup: 'rounded-3xl' } });
+              Swal.fire({ title: 'Kesalahan Jaringan!', text: 'Tidak dapat menghubungi server pangkalan data.', icon: 'error', confirmButtonColor: '#ef4444' });
             });
         },
 

@@ -417,18 +417,20 @@
         </div>
 
         <div class="relative mb-5">
-          <input type="text" x-model="carian" placeholder="TULIS NAMA / NO KP / TAJUK PROGRAM UNTUK TAPIS REKOD..." class="w-full px-5 py-3.5 pl-11 glass-input rounded-xl text-xs font-bold text-white uppercase placeholder:text-slate-600 outline-none">
+          <input type="text" x-model="carian" placeholder="TULIS NAMA / NO KP / NO HP / TAJUK PROGRAM UNTUK TAPIS REKOD..." class="w-full px-5 py-3.5 pl-11 glass-input rounded-xl text-xs font-bold text-white uppercase placeholder:text-slate-600 outline-none">
           <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
         </div>
 
+        <!-- Jadual Rekod Kehadiran Beserta Lajur No. HP -->
         <div class="overflow-x-auto hide-scrollbar rounded-2xl border border-white/5 w-full">
-          <table class="w-full text-left border-collapse text-[10px] font-bold uppercase tracking-wider min-w-[650px]">
+          <table class="w-full text-left border-collapse text-[10px] font-bold uppercase tracking-wider min-w-[750px]">
             <thead>
               <tr class="bg-slate-900/80 text-slate-400 border-b border-white/10">
                 <th class="p-4 text-center">Bil</th>
                 <th class="p-4">Program</th>
                 <th class="p-4">Nama Petugas</th>
                 <th class="p-4 text-center">No. KP</th>
+                <th class="p-4 text-center">No. HP / Tel</th>
                 <th class="p-4 text-center">Status</th>
                 <th class="p-4 text-center">Waktu Masuk / Sah</th>
                 <th class="p-4 text-center">Tindakan</th>
@@ -441,6 +443,21 @@
                   <td class="p-4 text-amber-400 truncate max-w-[140px]" x-text="r.program"></td>
                   <td class="p-4 text-white font-extrabold" x-text="r.nama"></td>
                   <td class="p-4 text-center text-slate-300 font-mono" x-text="r.kp"></td>
+                  <!-- Lajur No. HP Pintar dengan Pautan WhatsApp -->
+                  <td class="p-4 text-center font-mono">
+                    <template x-if="r.tel && r.tel !== '0100000000'">
+                      <a :href="'https://wa.me/6' + r.tel.replace(/[^0-9]/g, '')" 
+                         target="_blank" 
+                         class="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 transition-all" 
+                         title="Klik untuk WhatsApp Anggota">
+                        <i class="fab fa-whatsapp text-xs"></i>
+                        <span x-text="r.tel"></span>
+                      </a>
+                    </template>
+                    <template x-if="!r.tel || r.tel === '0100000000'">
+                      <span class="text-slate-500 italic text-[9px]">TIADA NO HP</span>
+                    </template>
+                  </td>
                   <td class="p-4 text-center">
                     <span :class="r.status === 'DISAHKAN HADIR' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-500 border border-amber-500/20'" class="px-2.5 py-1 text-[8px] font-black rounded-full border" x-text="r.status === 'DISAHKAN HADIR' ? 'HADIR' : 'MENUNGGU'"></span>
                   </td>
@@ -455,7 +472,7 @@
                 </tr>
               </template>
               <tr x-show="dapatkanRekodDitapis().length === 0">
-                <td colspan="7" class="p-10 text-center text-slate-500 font-black tracking-widest text-[11px]">TIADA REKOD PENDAFTARAN DIJUMPAI</td>
+                <td colspan="8" class="p-10 text-center text-slate-500 font-black tracking-widest text-[11px]">TIADA REKOD PENDAFTARAN DIJUMPAI</td>
               </tr>
             </tbody>
           </table>
@@ -496,7 +513,7 @@
     </div>
   </main>
 
-  <!-- MODAL EKSTRAK PINTAR NOTIS WHATSAPP (BARU) -->
+  <!-- MODAL EKSTRAK PINTAR NOTIS WHATSAPP -->
   <div x-show="pukalModal.open" class="fixed inset-0 z-[1700] bg-slate-950/95 backdrop-blur-md p-4 flex justify-center items-start pt-6 pb-20 overflow-y-auto" x-transition x-cloak>
     <div @click.away="pukalModal.open = false" class="w-full max-w-xl bg-slate-900 rounded-[2.5rem] p-6 sm:p-8 border border-emerald-500/30 shadow-2xl relative my-auto">
       <div class="border-b border-white/5 pb-4 mb-5 flex justify-between items-center">
@@ -504,7 +521,7 @@
           <h3 class="text-base font-black text-emerald-400 uppercase tracking-wider flex items-center gap-2">
             <i class="fas fa-bolt text-amber-400"></i> Ekstrak Notis & Pre-Daftar Pukal
           </h3>
-          <p class="text-[9px] font-bold text-slate-400 uppercase mt-0.5">Tampal terus teks mesyuarat / WhatsApp untuk ekstrak maklumat.</p>
+          <p class="text-[9px] font-bold text-slate-400 uppercase mt-0.5">Tampal terus teks mesyuarat / WhatsApp untuk ekstrak maklumat & anggota wajib.</p>
         </div>
         <button @click="pukalModal.open = false" class="text-slate-400 hover:text-white text-xl"><i class="fas fa-times"></i></button>
       </div>
@@ -541,7 +558,6 @@
 
           <div class="flex justify-between items-center text-[10px] font-black uppercase text-slate-300">
             <span>Senarai Anggota Wajib Diekstrak (<strong class="text-emerald-400" x-text="pukalModal.members.length"></strong> Orang)</span>
-            <span class="text-[9px] text-amber-400 font-bold">* Tel automatik '0100000000'</span>
           </div>
 
           <div class="max-h-40 overflow-y-auto hide-scrollbar bg-slate-950 rounded-2xl border border-white/5 divide-y divide-white/5 text-[10px] uppercase font-bold p-2">
@@ -840,17 +856,15 @@
           return `${String(hour12).padStart(2, '0')}:${min} ${suffix}`;
         },
 
-        // Program Aktif Sahaja (Tidak Lepas Tarikh)
         get activeProgramList() {
           const nowKL = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kuala_Lumpur' }));
-          nowKL.setHours(0,0,0,0); // Bandingkan ikut tarikh
+          nowKL.setHours(0,0,0,0);
           return this.programList.filter(p => {
             const progDate = new Date(`${p.date}T23:59:59`);
             return progDate >= nowKL;
           });
         },
 
-        // Program Arkib (Telah Lepas Tarikh)
         get pastProgramList() {
           const nowKL = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kuala_Lumpur' }));
           nowKL.setHours(0,0,0,0);
@@ -910,7 +924,6 @@
             return;
           }
 
-          // 1. Ekstrak Tajuk Program
           let pName = "PERJUMPAAN / TUGASAN RELA";
           const lines = txt.split('\n').map(l => l.trim()).filter(l => l.length > 0);
           const headerLine = lines.find(l => l.includes('📢') || l.toUpperCase().includes('PERJUMPAAN') || l.toUpperCase().includes('PROGRAM') || l.toUpperCase().includes('KAWALAN'));
@@ -918,7 +931,6 @@
             pName = headerLine.replace(/📢/g, '').trim().toUpperCase();
           }
 
-          // 2. Ekstrak Tarikh (Contoh: 22 Ogos 2026 atau 22/08/2026)
           let pDate = new Date().toISOString().split('T')[0];
           const monthMap = {
             'JANUARI': '01', 'JAN': '01', 'FEBRUARI': '02', 'FEB': '02', 'MAC': '03', 'APRIL': '04', 'APR': '04',
@@ -935,7 +947,6 @@
             pDate = `${year}-${month}-${day}`;
           }
 
-          // 3. Ekstrak Masa (Contoh: 8.00 pagi -> 08:00)
           let pTime = "08:00";
           const timeMatch = txt.match(/(\d{1,2})[\.:](\d{2})\s*(pagi|ptg|petang|malam|am|pm)?/i);
           if (timeMatch) {
@@ -948,19 +959,17 @@
             pTime = `${String(h).padStart(2, '0')}:${m}`;
           }
 
-          // 4. Ekstrak Lokasi (Contoh: Tempat: Dewan Terbuka Kg Baru, Sri Gading)
           let pLoc = "BATU PAHAT";
           const locLine = lines.find(l => l.toUpperCase().includes('TEMPAT:') || l.toUpperCase().includes('LOKASI:'));
           if (locLine) {
             pLoc = locLine.replace(/.*(?:TEMPAT|LOKASI):\s*/i, '').replace(/📍/g, '').trim().toUpperCase();
           }
 
-          // 5. Ekstrak Senarai Nama & No. KP (Match pattern: NAMA (KP))
           const memberList = [];
           const regexKP = /([A-Za-z\s@'/\.\-]+)\s*[\(\-\[]\s*(\d{12})\s*[\)\-\]]/g;
           let match;
           while ((match = regexKP.exec(txt)) !== null) {
-            let nameClean = match[1].replace(/^\d+[\.\)]\s*/, '').trim().toUpperCase(); // Buka penomboran 1. 2.
+            let nameClean = match[1].replace(/^\d+[\.\)]\s*/, '').trim().toUpperCase();
             const kpClean = match[2].trim();
             if (nameClean.length > 2 && kpClean.length === 12) {
               memberList.push({ nama: nameClean, kp: kpClean });
@@ -968,7 +977,7 @@
           }
 
           if (memberList.length === 0) {
-            Swal.fire({ title: 'Tiada Anggota Dikesan!', text: 'Gagal mengekstrak senarai nama & KP. Sila pastikan format nama mengandungi No. KP 12-digit dalam kurungan.', icon: 'error' });
+            Swal.fire({ title: 'Tiada Anggota Dikesan!', text: 'Gagal mengekstrak senarai nama & KP.', icon: 'error' });
             return;
           }
 
@@ -1000,7 +1009,6 @@
           this.loadingMsg = '1/2: Mencipta Program Baharu di Google Sheets...';
 
           try {
-            // Step 1: Tambah Program Baru
             const formProg = new FormData();
             formProg.append('action', 'addProgram');
             formProg.append('pin', pin);
@@ -1013,7 +1021,6 @@
             const resProg = await fetch(this.gasUrl, { method: 'POST', body: formProg }).then(r => r.json());
             if (!resProg.success) throw new Error(resProg.msg || 'Gagal membuat program');
 
-            // Step 2: Pre-Daftar Semua Anggota Pukal
             this.loadingMsg = `2/2: Memasukkan ${members.length} anggota secara pukal...`;
             const tarikhStandard = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kuala_Lumpur' });
             const dObj = new Date(tarikhStandard);
@@ -1028,7 +1035,7 @@
               formReg.append('program', pName);
               formReg.append('nama', members[i].nama);
               formReg.append('kp', "'" + members[i].kp);
-              formReg.append('tel', "'0100000000"); // Nombor telefon placeholder
+              formReg.append('tel', "'0100000000");
               formReg.append('timestamp', formattedTimestamp + ' [WAJIB]');
 
               await fetch(this.gasUrl, { method: 'POST', body: formReg });
@@ -1603,7 +1610,6 @@
           const incomingKp = this.form.kp.trim();
           const incomingNama = this.form.nama.trim().toUpperCase();
 
-          // Semak jika pernah disahkan atau hadir
           const existing = this.senaraiRekod.find(r => r.program === this.form.program && r.kp === incomingKp);
           if (existing && existing.status === 'DISAHKAN HADIR') {
             return Swal.fire({ title: 'Kehadiran Sedia Disahkan!', text: 'Anggota ini telah disahkan hadir sebelum ini.', icon: 'info' });
@@ -1655,4 +1661,3 @@
   </script>
 </body>
 </html>
-

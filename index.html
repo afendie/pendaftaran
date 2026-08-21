@@ -59,6 +59,32 @@
     input, select, textarea {
       font-size: 16px !important;
     }
+
+    /* Gaya Khas Untuk Cetakan Kertas A4 */
+    @media print {
+      body {
+        background: white !important;
+        color: black !important;
+      }
+      header, footer, main, .glass-card, .fixed:not(#lembaran-cetak-container) {
+        display: none !important;
+      }
+      #lembaran-cetak-container {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        background: white !important;
+        color: black !important;
+        padding: 10mm !important;
+        margin: 0 !important;
+        display: block !important;
+        z-index: 99999 !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
   </style>
 </head>
 <body class="min-h-screen flex flex-col text-slate-100 selection:bg-blue-600 selection:text-white max-w-full overflow-x-hidden" x-data="appManager()">
@@ -318,6 +344,7 @@
                 </div>
               </div>
               <div class="flex items-center gap-2 shrink-0">
+                <button @click="bukaCetakLembaran(p.name)" class="w-8 h-8 rounded-lg bg-emerald-500/15 hover:bg-emerald-500 text-emerald-400 hover:text-white flex items-center justify-center transition-all" title="Cetak Borang Kehadiran A4 Kaunter"><i class="fas fa-print text-[10px]"></i></button>
                 <button @click="bukaPosterQrMeja(p)" class="w-8 h-8 rounded-lg bg-amber-500/15 hover:bg-amber-500 text-amber-400 hover:text-white flex items-center justify-center transition-all animate-pulse" title="Papar Poster QR Kod Meja"><i class="fas fa-qrcode text-[10px]"></i></button>
                 <button @click="bukaEditProgram(p, index)" class="w-8 h-8 rounded-lg bg-blue-500/15 hover:bg-blue-500 text-blue-400 hover:text-white flex items-center justify-center transition-all" title="Ubah Maklumat Program"><i class="fas fa-pen-to-square text-[10px]"></i></button>
                 <button @click="padamProgramAwan(p.name)" class="w-8 h-8 rounded-lg bg-rose-500/15 hover:bg-rose-500 text-rose-400 hover:text-white flex items-center justify-center transition-all" title="Hapus Program"><i class="fas fa-trash text-[10px]"></i></button>
@@ -390,14 +417,17 @@
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-48 overflow-y-auto hide-scrollbar">
             <template x-for="p in pastProgramList" :key="p.name">
-              <div @click="tapisLogIkutProgram(p.name)" class="p-3.5 bg-slate-950/80 rounded-2xl border border-white/5 hover:border-amber-500/50 cursor-pointer transition-all flex justify-between items-center group">
-                <div class="pr-2">
+              <div class="p-3.5 bg-slate-950/80 rounded-2xl border border-white/5 hover:border-amber-500/50 transition-all flex justify-between items-center group">
+                <div @click="tapisLogIkutProgram(p.name)" class="pr-2 cursor-pointer flex-1">
                   <span class="block text-xs font-black text-slate-200 group-hover:text-amber-400 transition-colors uppercase truncate max-w-[180px]" x-text="p.name"></span>
                   <span class="text-[9px] font-bold text-slate-500 uppercase" x-text="`${formatTarikh(p.date)} • ${p.location}`"></span>
                 </div>
-                <div class="text-right shrink-0">
-                  <span class="text-[10px] font-black text-emerald-400" x-text="`${getRegisteredCount(p.name)} / ${p.capacity}`"></span>
-                  <span class="block text-[7px] font-black text-slate-500 uppercase">Hadir / Kuota</span>
+                <div class="flex items-center gap-2 shrink-0">
+                  <button @click="bukaCetakLembaran(p.name)" class="px-2 py-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500 hover:text-white rounded-lg text-[8px] font-black uppercase transition-all" title="Cetak Lembaran A4"><i class="fas fa-print"></i></button>
+                  <div class="text-right">
+                    <span class="text-[10px] font-black text-emerald-400" x-text="`${getRegisteredCount(p.name)} / ${p.capacity}`"></span>
+                    <span class="block text-[7px] font-black text-slate-500 uppercase">Hadir / Kuota</span>
+                  </div>
                 </div>
               </div>
             </template>
@@ -410,7 +440,8 @@
             <h3 class="text-lg font-black text-white uppercase tracking-wider"><i class="fas fa-database text-blue-500 mr-2"></i>Senarai Log Kehadiran Anggota</h3>
             <p class="text-[10px] font-bold text-slate-400 uppercase mt-1">Jejak pendaftaran dan kehadiran fizikal anggota RELA Batu Pahat</p>
           </div>
-          <div class="flex gap-2">
+          <div class="flex flex-wrap gap-2">
+            <button x-show="penapisProgram" @click="bukaCetakLembaran(penapisProgram)" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-[9px] font-black uppercase rounded-xl shadow-md transition-all flex items-center gap-1.5"><i class="fas fa-print"></i> Cetak Lembaran Program Ini</button>
             <button x-show="penapisProgram" @click="penapisProgram = ''" class="px-3 py-2 bg-slate-800 text-amber-400 text-[9px] font-black uppercase rounded-xl border border-white/10"><i class="fas fa-xmark mr-1"></i> Reset Penapis Program</button>
             <button @click="padamSemuaLogAwan" class="px-4 py-2.5 bg-rose-500/10 border border-rose-500/20 hover:bg-rose-500 text-rose-400 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all"><i class="fas fa-trash-can mr-2"></i>Kosongkan Rekod</button>
           </div>
@@ -445,16 +476,16 @@
                   <td class="p-4 text-center text-slate-300 font-mono" x-text="r.kp"></td>
                   <!-- Lajur No. HP Pintar dengan Pautan WhatsApp -->
                   <td class="p-4 text-center font-mono">
-                    <template x-if="r.tel && r.tel !== '0100000000'">
-                      <a :href="'https://wa.me/6' + r.tel.replace(/[^0-9]/g, '')" 
+                    <template x-if="formatTelPapar(r.tel) !== '-'">
+                      <a :href="'https://wa.me/60' + formatTelForWa(r.tel)" 
                          target="_blank" 
-                         class="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 transition-all" 
+                         class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 transition-all" 
                          title="Klik untuk WhatsApp Anggota">
                         <i class="fab fa-whatsapp text-xs"></i>
-                        <span x-text="r.tel"></span>
+                        <span x-text="formatTelPapar(r.tel)"></span>
                       </a>
                     </template>
-                    <template x-if="!r.tel || r.tel === '0100000000'">
+                    <template x-if="formatTelPapar(r.tel) === '-'">
                       <span class="text-slate-500 italic text-[9px]">TIADA NO HP</span>
                     </template>
                   </td>
@@ -512,6 +543,99 @@
 
     </div>
   </main>
+
+  <!-- MODAL BANTUAN CETAK LEMBARAN A4 PRA-KEHADIRAN (BARU) -->
+  <div x-show="cetakModal.open" class="fixed inset-0 z-[2000] bg-slate-950/95 backdrop-blur-md p-4 flex justify-center items-start pt-6 pb-20 overflow-y-auto" x-transition x-cloak>
+    <div @click.away="cetakModal.open = false" class="w-full max-w-4xl bg-white text-slate-900 rounded-[2rem] p-6 sm:p-8 shadow-2xl relative my-auto">
+      
+      <!-- Kawalan Atas (Sembunyi Bila Print) -->
+      <div class="no-print flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4 mb-6">
+        <div>
+          <h3 class="text-base font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
+            <i class="fas fa-print text-blue-600"></i> Paparan Lembaran Pra-Kehadiran Kaunter (A4)
+          </h3>
+          <p class="text-[10px] font-bold text-slate-500 uppercase mt-0.5">Sedia untuk dicetak ke mesin pencetak kertas A4 atau disimpan sebagai dokumen PDF.</p>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="window.print()" class="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl font-black text-xs uppercase tracking-wider transition-all shadow-lg flex items-center gap-2">
+            <i class="fas fa-print"></i> Cetak Lembaran A4
+          </button>
+          <button @click="cetakModal.open = false" class="px-4 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl font-black text-xs uppercase tracking-wider transition-all">
+            Tutup
+          </button>
+        </div>
+      </div>
+
+      <!-- KANDUNGAN LEMBARAN RASA A4 (CETAKAN FIZIKAL) -->
+      <div id="lembaran-cetak-container">
+        
+        <!-- Header Dokumen Rasmi -->
+        <div class="text-center border-b-2 border-slate-900 pb-4 mb-4">
+          <h2 class="text-base font-black uppercase tracking-wider text-slate-900">JABATAN SUKARELAWAN MALAYSIA (RELA)</h2>
+          <h3 class="text-sm font-extrabold uppercase text-slate-800">PEJABAT RELA DAERAH BATU PAHAT</h3>
+          <p class="text-xs font-bold text-slate-600 uppercase tracking-widest mt-1">BORANG PENDAFTARAN & SENARAI SEMAK KEHADIRAN FIZIKAL ANGGOTA</p>
+        </div>
+
+        <!-- Butiran Program -->
+        <div class="grid grid-cols-2 gap-4 text-[11px] font-bold text-slate-900 uppercase bg-slate-50 p-3 rounded-lg border border-slate-300 mb-4">
+          <div>
+            <p><span class="text-slate-500">TAJUK PROGRAM:</span> <strong class="text-slate-900 font-extrabold" x-text="cetakModal.programName"></strong></p>
+            <p><span class="text-slate-500">LOKASI BERTUGAS:</span> <span x-text="getCetakProgramDetail('location')"></span></p>
+          </div>
+          <div class="text-right">
+            <p><span class="text-slate-500">TARIKH / MASA:</span> <span x-text="`${formatTarikh(getCetakProgramDetail('date'))} (${formatMasa(getCetakProgramDetail('time'))})`"></span></p>
+            <p><span class="text-slate-500">KUOTA DIJANGKA:</span> <span x-text="`${getCetakRekodList().length} / ${getCetakProgramDetail('capacity')} Orang`"></span></p>
+          </div>
+        </div>
+
+        <!-- Jadual Anggota Pra-Kehadiran (Tengah & Mengikut Kuota Program) -->
+        <div class="w-full flex justify-center mb-6">
+          <table class="w-full text-left border-collapse text-[10px] uppercase border border-slate-900 mx-auto">
+            <thead>
+              <tr class="bg-slate-200 text-slate-900 border-b border-slate-900 font-black">
+                <th class="p-2 border-r border-slate-900 text-center w-10">Bil</th>
+                <th class="p-2 border-r border-slate-900 text-center">Nama Penuh Anggota (Sesuai MyKad)</th>
+                <th class="p-2 border-r border-slate-900 text-center w-28">No. Kad Pengenalan</th>
+                <th class="p-2 border-r border-slate-900 text-center w-24">No. HP / Tel</th>
+                <th class="p-2 border-r border-slate-900 text-center w-20">Status</th>
+                <th class="p-2 text-center w-32">Tandatangan / Masa Lapor</th>
+              </tr>
+            </thead>
+            <tbody>
+              <template x-for="(r, i) in getCetakTotalRows()" :key="i">
+                <tr class="border-b border-slate-400 font-semibold h-7">
+                  <td class="p-1.5 border-r border-slate-900 text-center font-bold" x-text="i + 1"></td>
+                  <td class="p-1.5 border-r border-slate-900 font-bold text-slate-900" x-text="r.nama || ''"></td>
+                  <td class="p-1.5 border-r border-slate-900 text-center font-mono" x-text="r.kp || ''"></td>
+                  <td class="p-1.5 border-r border-slate-900 text-center font-mono" x-text="r.tel ? formatTelPapar(r.tel) : ''"></td>
+                  <td class="p-1.5 border-r border-slate-900 text-center font-bold"></td>
+                  <td class="p-1.5 text-center text-slate-400 font-mono text-[9px]"></td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Ruangan Pengesahan Urus Setia Kaunter -->
+        <div class="mt-8 pt-4 border-t border-slate-300 grid grid-cols-2 gap-8 text-[10px] uppercase font-bold text-slate-900">
+          <div class="space-y-4">
+            <p class="font-extrabold text-slate-900">DISAHKAN OLEH URUS SETIA KAUNTER:</p>
+            <div class="h-12">
+              <p>TANDATANGAN:</p>
+            </div>
+            <p>NAMA:</p>
+            <p>JAWATAN:</p>
+          </div>
+          <div class="text-right space-y-4">
+            <p class="font-extrabold text-slate-900">CATATAN URUS SETIA / PEJABAT:</p>
+            <p>JUMLAH HADIR FIZIKAL:</p>
+            <p>TARIKH:</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
 
   <!-- MODAL EKSTRAK PINTAR NOTIS WHATSAPP -->
   <div x-show="pukalModal.open" class="fixed inset-0 z-[1700] bg-slate-950/95 backdrop-blur-md p-4 flex justify-center items-start pt-6 pb-20 overflow-y-auto" x-transition x-cloak>
@@ -773,6 +897,7 @@
         programPosterModal: { open: false, name: '', date: '', location: '' },
         pasModal: { open: false, program: '', nama: '', kp: '', tarikh: '', lokasi: '' },
         pukalModal: { open: false, rawText: '', parsed: false, programName: '', location: '', date: '', time: '', members: [] },
+        cetakModal: { open: false, programName: '' },
         
         kioskScanActive: false,
         kioskScanEngine: null,
@@ -856,6 +981,27 @@
           return `${String(hour12).padStart(2, '0')}:${min} ${suffix}`;
         },
 
+        formatTelPapar(tel) {
+          if (!tel) return '-';
+          let str = String(tel).replace(/[^0-9]/g, '');
+          if (!str || str === '0100000000') return '-';
+          if (str.startsWith('1') && str.length >= 9 && str.length <= 10) {
+            str = '0' + str;
+          }
+          return str;
+        },
+
+        formatTelForWa(tel) {
+          if (!tel) return '';
+          let str = String(tel).replace(/[^0-9]/g, '');
+          if (str.startsWith('60')) {
+            str = str.substring(2);
+          } else if (str.startsWith('0')) {
+            str = str.substring(1);
+          }
+          return str;
+        },
+
         get activeProgramList() {
           const nowKL = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kuala_Lumpur' }));
           nowKL.setHours(0,0,0,0);
@@ -876,6 +1022,45 @@
 
         getRegisteredCount(programName) {
           return this.senaraiRekod.filter(r => r.program === programName).length;
+        },
+
+        // Mengambil Butiran Program untuk Lembaran Cetak
+        getCetakProgramDetail(field) {
+          const prog = this.programList.find(p => p.name === this.cetakModal.programName);
+          if (!prog) return '-';
+          return prog[field] || '-';
+        },
+
+        // Mengambil Senarai Rekod Anggota untuk Lembaran Cetak
+        getCetakRekodList() {
+          if (!this.cetakModal.programName) return [];
+          return this.senaraiRekod.filter(r => (r.program || '').toUpperCase() === this.cetakModal.programName.toUpperCase());
+        },
+
+        // Mengambil Jumlah Baris Mengikut Kuota Program
+        getCetakTotalRows() {
+          const list = this.getCetakRekodList();
+          const capVal = parseInt(this.getCetakProgramDetail('capacity'));
+          const targetTotal = (!isNaN(capVal) && capVal > 0) ? Math.max(capVal, list.length) : Math.max(list.length, 10);
+          
+          const rows = [];
+          for (let i = 0; i < targetTotal; i++) {
+            if (i < list.length) {
+              rows.push(list[i]);
+            } else {
+              rows.push({ nama: '', kp: '', tel: '', status: '', verifiedTime: '' });
+            }
+          }
+          return rows;
+        },
+
+        bukaCetakLembaran(pName) {
+          if (!pName) {
+            Swal.fire({ title: 'Sila Pilih Program!', text: 'Sila pilih program terlebih dahulu untuk mencetak lembaran.', icon: 'warning' });
+            return;
+          }
+          this.cetakModal.programName = pName;
+          this.cetakModal.open = true;
         },
 
         semakKeadaanProgram() {
@@ -902,10 +1087,14 @@
           let val = e.target.value.replace(/[^0-9]/g, '');
           this.form.kp = val;
           if (val.length === 12 && this.form.program) {
-            const preMatch = this.senaraiRekod.find(r => r.kp === val && r.program === this.form.program);
+            const preMatch = this.senaraiRekod.find(r => {
+              const kpDigits = String(r.kp || '').replace(/[^0-9]/g, '');
+              return kpDigits === val && r.program === this.form.program;
+            });
             if (preMatch) {
               this.form.nama = preMatch.nama;
-              if (preMatch.tel && preMatch.tel !== '0100000000') this.form.tel = preMatch.tel;
+              const telClean = this.formatTelPapar(preMatch.tel);
+              if (telClean && telClean !== '-') this.form.tel = telClean;
             }
           }
         },
@@ -1097,7 +1286,10 @@
                 Swal.fire({ title: 'Ralat KP!', text: 'Sila pastikan No. KP dimasukkan tepat 12 digit.', icon: 'error' });
                 return;
               }
-              const match = this.senaraiRekod.find(r => r.kp === checkKp);
+              const match = this.senaraiRekod.find(r => {
+                const kpClean = String(r.kp || '').replace(/[^0-9]/g, '');
+                return kpClean === checkKp;
+              });
               if (match) {
                 this.bukaResitPasQR(match);
               } else {
@@ -1131,7 +1323,11 @@
           if (this.isProcessingScan) return;
           this.isProcessingScan = true;
 
-          const match = this.senaraiRekod.find(r => r.kp === qrText);
+          const match = this.senaraiRekod.find(r => {
+            const kpClean = String(r.kp || '').replace(/[^0-9]/g, '');
+            return kpClean === qrText.replace(/[^0-9]/g, '');
+          });
+
           if (!match) {
             Swal.fire({ title: 'Sila Daftar Dahulu!', text: `KP: ${qrText} tiada pendaftaran dikesan.`, icon: 'error', toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
             setTimeout(() => { this.isProcessingScan = false; }, 2500);
@@ -1345,7 +1541,8 @@
 
         bukaEditRekod(rekod, i) {
           this.editRecordModal.index = i; this.editRecordModal.oldKp = rekod.kp; this.editRecordModal.program = rekod.program;
-          this.editRecordModal.nama = rekod.nama; this.editRecordModal.kp = rekod.kp; this.editRecordModal.tel = rekod.tel;
+          this.editRecordModal.nama = rekod.nama; this.editRecordModal.kp = rekod.kp; 
+          this.editRecordModal.tel = this.formatTelPapar(rekod.tel);
           this.editRecordModal.open = true;
         },
 
@@ -1430,12 +1627,15 @@
         },
 
         sahkanKehadiranPantasAwan() {
-          const rawKpInput = this.quickVerifyInput.trim();
+          const rawKpInput = this.quickVerifyInput.trim().replace(/[^0-9]/g, '');
           if (rawKpInput.length !== 12) {
             Swal.fire({ title: 'No. KP Tidak Sah!', text: 'Sila pastikan tepat 12 digit dimasukkan.', icon: 'warning' });
             return;
           }
-          const match = this.senaraiRekod.find(r => r.kp === rawKpInput);
+          const match = this.senaraiRekod.find(r => {
+            const kpClean = String(r.kp || '').replace(/[^0-9]/g, '');
+            return kpClean === rawKpInput;
+          });
           if (!match) {
             Swal.fire({ title: 'Anggota Tidak Berdaftar!', text: 'No. KP ini tidak ditemui dalam pendaftaran program.', icon: 'error' });
             return;
@@ -1572,19 +1772,41 @@
           Swal.fire({ title: 'Menapis Rekod', text: `Memaparkan log untuk program: ${pName}`, icon: 'info', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
         },
 
+        // Logik Penapis Carian Pintar
         dapatkanRekodDitapis() {
           let list = this.senaraiRekod;
           if (this.penapisProgram) {
             list = list.filter(r => (r.program || '').toUpperCase() === this.penapisProgram.toUpperCase());
           }
+          
           if (!this.carian.trim()) return list;
-          const kuncicari = this.carian.toUpperCase();
+
+          const kuncicari = this.carian.trim().toUpperCase();
+          const kuncicariDigits = kuncicari.replace(/[^0-9]/g, '');
+
           return list.filter(r => {
-            const nama = (r.nama || '').toUpperCase();
-            const program = (r.program || '').toUpperCase();
-            const kp = (r.kp || '');
-            const tel = (r.tel || '');
-            return nama.includes(kuncicari) || program.includes(kuncicari) || kp.includes(kuncicari) || tel.includes(kuncicari);
+            const nama = String(r.nama || '').toUpperCase();
+            const program = String(r.program || '').toUpperCase();
+            
+            const kpRaw = String(r.kp || '').toUpperCase();
+            const kpDigits = kpRaw.replace(/[^0-9]/g, '');
+
+            const telRaw = String(r.tel || '').toUpperCase();
+            const telDigits = telRaw.replace(/[^0-9]/g, '');
+            const telNormalized = telDigits.startsWith('1') ? '0' + telDigits : telDigits;
+
+            const padanTeks = nama.includes(kuncicari) || program.includes(kuncicari);
+
+            let padanNombor = false;
+            if (kuncicariDigits.length > 0) {
+              padanNombor = kpDigits.includes(kuncicariDigits) || 
+                            telDigits.includes(kuncicariDigits) || 
+                            telNormalized.includes(kuncicariDigits);
+            }
+
+            const padanMentah = kpRaw.includes(kuncicari) || telRaw.includes(kuncicari);
+
+            return padanTeks || padanNombor || padanMentah;
           });
         },
 
@@ -1610,7 +1832,11 @@
           const incomingKp = this.form.kp.trim();
           const incomingNama = this.form.nama.trim().toUpperCase();
 
-          const existing = this.senaraiRekod.find(r => r.program === this.form.program && r.kp === incomingKp);
+          const existing = this.senaraiRekod.find(r => {
+            const kpClean = String(r.kp || '').replace(/[^0-9]/g, '');
+            return r.program === this.form.program && kpClean === incomingKp;
+          });
+
           if (existing && existing.status === 'DISAHKAN HADIR') {
             return Swal.fire({ title: 'Kehadiran Sedia Disahkan!', text: 'Anggota ini telah disahkan hadir sebelum ini.', icon: 'info' });
           }
